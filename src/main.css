@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body text-base text-dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-black capitalize font-normal;
+  }
+
+  /* Força scroll suave mesmo em navegadores que não suportam nativamente */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-secondary text-dark px-6 py-4 rounded-[10px] capitalize transition-all duration-300 hover:bg-secondary/90;
+  }
+
+  .btn-arrow {
+    @apply relative;
+  }
+
+  .btn-arrow span {
+    @apply inline-block relative transition-all duration-300;
+  }
+
+  .btn-arrow:hover span {
+    @apply -translate-x-3;
+  }
+
+  .btn-arrow svg {
+    @apply absolute right-0 top-1/2 -translate-y-1/2 opacity-0 transition-all duration-300;
+  }
+
+  .btn-arrow:hover svg {
+    @apply opacity-100 -right-6;
+  }
+
+  .padding-small {
+    @apply py-20;
+  }
+
+  .padding-large {
+    @apply py-32;
+  }
+
+  .padding-side {
+    @apply px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24;
+  }
+
+  .container-fluid {
+    @apply w-full mx-auto;
+  }
+
+  @media (max-width: 768px) {
+    .padding-large {
+      @apply pt-32 pb-8;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .padding-large {
+      @apply pt-20 pb-8;
+    }
+  }
+}
+
+/* Preloader */
+.preloader {
+  @apply w-full h-screen fixed top-0 left-0 z-[111] bg-white;
+}
+
+.loader {
+  @apply block relative left-1/2 top-1/2 w-[150px] h-[150px] -mt-[75px] -ml-[75px] rounded-full border-[3px] border-transparent border-t-primary;
+  animation: spin 2s linear infinite;
+}
+
+.loader::before {
+  content: "";
+  @apply absolute top-[5px] left-[5px] right-[5px] bottom-[5px] rounded-full border-[3px] border-transparent border-t-[#ECB27B];
+  animation: spin 3s linear infinite;
+}
+
+.loader::after {
+  content: "";
+  @apply absolute top-[15px] left-[15px] right-[15px] bottom-[15px] rounded-full border-[3px] border-transparent border-t-[#f7dac1];
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Swiper */
+.swiper-pagination-bullet {
+  @apply w-[18px] h-[18px] bg-primary;
+}
+
+.swiper-pagination-bullet-active {
+  @apply bg-primary;
+}
+
+/* Modal - estilos removidos, usando apenas Tailwind no componente */
+
