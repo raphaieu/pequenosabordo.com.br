@@ -27,38 +27,60 @@ if (!isset($_SERVER['SCRIPT_NAME'])) {
     $_SERVER['SCRIPT_NAME'] = '/admin/public/index.php';
 }
 
-// Ajusta REQUEST_URI para remover o prefixo /admin se necessário
+// Salva valores originais para debug (descomente se necessário)
+// $originalRequestUri = $_SERVER['REQUEST_URI'] ?? '';
+// $originalPathInfo = $_SERVER['PATH_INFO'] ?? '';
+// $originalScriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+
+// Processa REQUEST_URI para ajustar rotas
+// IMPORTANTE: /admin/api e /images devem manter o prefixo completo
 if (isset($_SERVER['REQUEST_URI'])) {
     $requestUri = $_SERVER['REQUEST_URI'];
     
-    // Remove query string temporariamente para processar
+    // Remove query string temporariamente
     $queryString = '';
     if (($pos = strpos($requestUri, '?')) !== false) {
         $queryString = substr($requestUri, $pos);
         $requestUri = substr($requestUri, 0, $pos);
     }
     
-    // Remove o prefixo /admin
-    if (strpos($requestUri, '/admin') === 0) {
-        $requestUri = substr($requestUri, 6); // Remove '/admin' (6 caracteres)
-        // Se ficou vazio ou só tem barra, vira raiz
+    // Verifica se é rota de API ou imagens (mantém prefixo completo)
+    if (strpos($requestUri, '/admin/api') === 0) {
+        // Mantém /admin/api intacto - Slim precisa ver o caminho completo
+        // Remove apenas /admin/public/index.php se estiver presente
+        $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
+        // Define PATH_INFO corretamente para o Slim
+        $_SERVER['PATH_INFO'] = $requestUri;
+    } elseif (strpos($requestUri, '/images') === 0) {
+        // Mantém /images intacto
+        $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
+        $_SERVER['PATH_INFO'] = $requestUri;
+    } elseif (strpos($requestUri, '/admin') === 0) {
+        // Remove /admin para rotas administrativas
+        $requestUri = substr($requestUri, 6);
         if ($requestUri === '' || $requestUri === '/') {
             $requestUri = '/';
         } else {
-            // Remove barras duplicadas e garante que começa com /
             $requestUri = '/' . ltrim($requestUri, '/');
         }
+        $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
+        $_SERVER['PATH_INFO'] = $requestUri;
     } elseif ($requestUri === '' || $requestUri === '/admin') {
-        // Se for só /admin sem barra final, também vira raiz
-        $requestUri = '/';
+        $_SERVER['REQUEST_URI'] = '/' . $queryString;
+        $_SERVER['PATH_INFO'] = '/';
     }
     
-    // Restaura query string
-    $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
+    // Garante que PATH_INFO está definido mesmo se não foi processado acima
+    if (!isset($_SERVER['PATH_INFO'])) {
+        $_SERVER['PATH_INFO'] = $requestUri;
+    }
 }
 
 // Cria aplicação Slim
 $app = AppFactory::create();
+
+// NÃO configura base path - queremos controle manual sobre as rotas
+// Isso permite que /admin/api e /images funcionem corretamente
 
 // Função helper para renderizar views PHP
 function renderView($viewPath, $data = []) {
@@ -120,12 +142,20 @@ $reservaController = new ReservaController($reservaModel, $produtoModel, $pdfSer
 // Middleware de autenticação
 $authMiddleware = new AuthMiddleware();
 
-// Rotas públicas (sem prefixo /admin porque o base path já está configurado)
-$app->get('/login', [$authController, 'loginForm'])->setName('login');
-$app->post('/login', [$authController, 'login']);
-$app->get('/logout', [$authController, 'logout'])->setName('logout');
+// ============================================
+// ROTAS PÚBLICAS (fora do base path)
+// ============================================
 
-// Rota para servir imagens estáticas (fora do base path)
+// API pública para produtos (front-end) - DEVE SER PRIMEIRA PARA TER PRIORIDADE
+$app->get('/admin/api/produtos', function ($request, $response) use ($produtoModel) {
+    $produtos = $produtoModel->all();
+    $response->getBody()->write(json_encode($produtos));
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withHeader('Access-Control-Allow-Origin', '*');
+});
+
+// Rota para servir imagens estáticas
 $app->get('/images/produtos/{filename}', function ($request, $response, $args) {
     $baseDir = dirname(__DIR__);
     $distFile = $baseDir . '/dist/images/produtos/' . $args['filename'];
@@ -150,14 +180,14 @@ $app->get('/images/produtos/{filename}', function ($request, $response, $args) {
         ->withHeader('Cache-Control', 'public, max-age=31536000');
 });
 
-// API pública para produtos (front-end) - fora do base path
-$app->get('/admin/api/produtos', function ($request, $response) use ($produtoModel) {
-    $produtos = $produtoModel->all();
-    $response->getBody()->write(json_encode($produtos));
-    return $response
-        ->withHeader('Content-Type', 'application/json')
-        ->withHeader('Access-Control-Allow-Origin', '*');
-});
+// ============================================
+// ROTAS ADMINISTRATIVAS (com prefixo removido)
+// ============================================
+
+// Rotas públicas (sem prefixo /admin porque o base path já está configurado)
+$app->get('/login', [$authController, 'loginForm'])->setName('login');
+$app->post('/login', [$authController, 'login']);
+$app->get('/logout', [$authController, 'logout'])->setName('logout');
 
 // Rotas protegidas - Dashboard
 $app->get('/dashboard', function ($request, $response) use ($produtoModel, $reservaModel) {
