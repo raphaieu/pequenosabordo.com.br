@@ -1,0 +1,26 @@
+# Apache Configuration para Admin (caso use Apache)
+# Se usar Nginx, este arquivo não será usado
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /admin/
+    
+    # Redirecionar para public/index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/index.php [L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Proteger arquivos sensíveis
+<FilesMatch "^(\.env|\.git|composer\.(json|lock)|config|database|scripts|vendor)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+

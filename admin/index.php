@@ -22,6 +22,41 @@ if (file_exists(__DIR__ . '/.env')) {
 // Inicia sessão
 session_start();
 
+// Configura base path se não estiver definido
+if (!isset($_SERVER['SCRIPT_NAME'])) {
+    $_SERVER['SCRIPT_NAME'] = '/admin/public/index.php';
+}
+
+// Ajusta REQUEST_URI para remover o prefixo /admin se necessário
+if (isset($_SERVER['REQUEST_URI'])) {
+    $requestUri = $_SERVER['REQUEST_URI'];
+    
+    // Remove query string temporariamente para processar
+    $queryString = '';
+    if (($pos = strpos($requestUri, '?')) !== false) {
+        $queryString = substr($requestUri, $pos);
+        $requestUri = substr($requestUri, 0, $pos);
+    }
+    
+    // Remove o prefixo /admin
+    if (strpos($requestUri, '/admin') === 0) {
+        $requestUri = substr($requestUri, 6); // Remove '/admin' (6 caracteres)
+        // Se ficou vazio ou só tem barra, vira raiz
+        if ($requestUri === '' || $requestUri === '/') {
+            $requestUri = '/';
+        } else {
+            // Remove barras duplicadas e garante que começa com /
+            $requestUri = '/' . ltrim($requestUri, '/');
+        }
+    } elseif ($requestUri === '' || $requestUri === '/admin') {
+        // Se for só /admin sem barra final, também vira raiz
+        $requestUri = '/';
+    }
+    
+    // Restaura query string
+    $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
+}
+
 // Cria aplicação Slim
 $app = AppFactory::create();
 
@@ -47,6 +82,12 @@ function imageUrl($imagePath) {
     
     // Produção ou quando não for localhost:8000: usa rota do PHP
     return '/images/produtos/' . basename($imagePath);
+}
+
+// Função helper para gerar URLs do admin
+function adminUrl($path = '') {
+    $path = ltrim($path, '/');
+    return '/admin/' . $path;
 }
 
 // Configuração do banco de dados
@@ -79,12 +120,12 @@ $reservaController = new ReservaController($reservaModel, $produtoModel, $pdfSer
 // Middleware de autenticação
 $authMiddleware = new AuthMiddleware();
 
-// Rotas públicas
-$app->get('/admin/login', [$authController, 'loginForm'])->setName('login');
-$app->post('/admin/login', [$authController, 'login']);
-$app->get('/admin/logout', [$authController, 'logout'])->setName('logout');
+// Rotas públicas (sem prefixo /admin porque o base path já está configurado)
+$app->get('/login', [$authController, 'loginForm'])->setName('login');
+$app->post('/login', [$authController, 'login']);
+$app->get('/logout', [$authController, 'logout'])->setName('logout');
 
-// Rota para servir imagens estáticas
+// Rota para servir imagens estáticas (fora do base path)
 $app->get('/images/produtos/{filename}', function ($request, $response, $args) {
     $baseDir = dirname(__DIR__);
     $distFile = $baseDir . '/dist/images/produtos/' . $args['filename'];
@@ -109,7 +150,7 @@ $app->get('/images/produtos/{filename}', function ($request, $response, $args) {
         ->withHeader('Cache-Control', 'public, max-age=31536000');
 });
 
-// API pública para produtos (front-end)
+// API pública para produtos (front-end) - fora do base path
 $app->get('/admin/api/produtos', function ($request, $response) use ($produtoModel) {
     $produtos = $produtoModel->all();
     $response->getBody()->write(json_encode($produtos));
@@ -119,7 +160,7 @@ $app->get('/admin/api/produtos', function ($request, $response) use ($produtoMod
 });
 
 // Rotas protegidas - Dashboard
-$app->get('/admin/dashboard', function ($request, $response) use ($produtoModel, $reservaModel) {
+$app->get('/dashboard', function ($request, $response) use ($produtoModel, $reservaModel) {
     $produtosCount = count($produtoModel->all());
     $reservasCount = count($reservaModel->all());
     $html = renderView('dashboard.php', [
@@ -131,24 +172,24 @@ $app->get('/admin/dashboard', function ($request, $response) use ($produtoModel,
 })->add($authMiddleware);
 
 // Rotas protegidas - Produtos
-$app->get('/admin/produtos', [$produtoController, 'index'])->add($authMiddleware);
-$app->get('/admin/produtos/create', [$produtoController, 'create'])->add($authMiddleware);
-$app->post('/admin/produtos/store', [$produtoController, 'store'])->add($authMiddleware);
-$app->get('/admin/produtos/{id}/edit', [$produtoController, 'edit'])->add($authMiddleware);
-$app->post('/admin/produtos/{id}/update', [$produtoController, 'update'])->add($authMiddleware);
-$app->post('/admin/produtos/{id}/delete', [$produtoController, 'delete'])->add($authMiddleware);
+$app->get('/produtos', [$produtoController, 'index'])->add($authMiddleware);
+$app->get('/produtos/create', [$produtoController, 'create'])->add($authMiddleware);
+$app->post('/produtos/store', [$produtoController, 'store'])->add($authMiddleware);
+$app->get('/produtos/{id}/edit', [$produtoController, 'edit'])->add($authMiddleware);
+$app->post('/produtos/{id}/update', [$produtoController, 'update'])->add($authMiddleware);
+$app->post('/produtos/{id}/delete', [$produtoController, 'delete'])->add($authMiddleware);
 
 // Rotas protegidas - Reservas
-$app->get('/admin/reservas', [$reservaController, 'index'])->add($authMiddleware);
-$app->get('/admin/reservas/create', [$reservaController, 'create'])->add($authMiddleware);
-$app->post('/admin/reservas/store', [$reservaController, 'store'])->add($authMiddleware);
-$app->get('/admin/reservas/{id}/edit', [$reservaController, 'edit'])->add($authMiddleware);
-$app->post('/admin/reservas/{id}/update', [$reservaController, 'update'])->add($authMiddleware);
-$app->post('/admin/reservas/{id}/delete', [$reservaController, 'delete'])->add($authMiddleware);
-$app->get('/admin/reservas/{id}/pdf', [$reservaController, 'generatePdf'])->add($authMiddleware);
+$app->get('/reservas', [$reservaController, 'index'])->add($authMiddleware);
+$app->get('/reservas/create', [$reservaController, 'create'])->add($authMiddleware);
+$app->post('/reservas/store', [$reservaController, 'store'])->add($authMiddleware);
+$app->get('/reservas/{id}/edit', [$reservaController, 'edit'])->add($authMiddleware);
+$app->post('/reservas/{id}/update', [$reservaController, 'update'])->add($authMiddleware);
+$app->post('/reservas/{id}/delete', [$reservaController, 'delete'])->add($authMiddleware);
+$app->get('/reservas/{id}/pdf', [$reservaController, 'generatePdf'])->add($authMiddleware);
 
-// Redireciona /admin para /admin/login
-$app->get('/admin', function ($request, $response) {
+// Redireciona /admin e /admin/ para /admin/login
+$app->get('/', function ($request, $response) {
     return $response
         ->withStatus(302)
         ->withHeader('Location', '/admin/login');
