@@ -28,8 +28,8 @@ class Produto
 
     public function create($data)
     {
-        $sql = "INSERT INTO produtos (nome, imagem, marca, tipoInstalacao, orientacao, precoCurto, precoLongo, descricao) 
-                VALUES (:nome, :imagem, :marca, :tipoInstalacao, :orientacao, :precoCurto, :precoLongo, :descricao)";
+        $sql = "INSERT INTO produtos (nome, imagem, marca, tipoInstalacao, orientacao, preco1, preco2, preco3, descricao) 
+                VALUES (:nome, :imagem, :marca, :tipoInstalacao, :orientacao, :preco1, :preco2, :preco3, :descricao)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -38,8 +38,9 @@ class Produto
             ':marca' => $data['marca'],
             ':tipoInstalacao' => $data['tipoInstalacao'] ?? null,
             ':orientacao' => $data['orientacao'] ?? null,
-            ':precoCurto' => $data['precoCurto'],
-            ':precoLongo' => $data['precoLongo'],
+            ':preco1' => $data['preco1'],
+            ':preco2' => $data['preco2'],
+            ':preco3' => $data['preco3'],
             ':descricao' => $data['descricao'],
         ]);
 
@@ -54,8 +55,9 @@ class Produto
                 marca = :marca, 
                 tipoInstalacao = :tipoInstalacao, 
                 orientacao = :orientacao, 
-                precoCurto = :precoCurto, 
-                precoLongo = :precoLongo, 
+                preco1 = :preco1, 
+                preco2 = :preco2, 
+                preco3 = :preco3, 
                 descricao = :descricao,
                 atualizado_em = CURRENT_TIMESTAMP
                 WHERE id = :id";
@@ -68,8 +70,9 @@ class Produto
             ':marca' => $data['marca'],
             ':tipoInstalacao' => $data['tipoInstalacao'] ?? null,
             ':orientacao' => $data['orientacao'] ?? null,
-            ':precoCurto' => $data['precoCurto'],
-            ':precoLongo' => $data['precoLongo'],
+            ':preco1' => $data['preco1'],
+            ':preco2' => $data['preco2'],
+            ':preco3' => $data['preco3'],
             ':descricao' => $data['descricao'],
         ]);
     }

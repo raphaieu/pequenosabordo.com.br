@@ -3,7 +3,7 @@ $title = 'Produtos - Admin';
 ob_start();
 ?>
 
-<div class="max-w-6xl mx-auto">
+<div class="max-w-8xl mx-auto">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 class="text-2xl lg:text-3xl font-heading font-semibold text-primary">Produtos</h1>
         <a href="/admin/produtos/create" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-opacity-90 transition-colors font-medium">
@@ -18,7 +18,9 @@ ob_start();
             <img src="<?= htmlspecialchars(imageUrl($produto['imagem'])) ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="w-full h-48 object-cover rounded mb-4">
             <h3 class="font-semibold text-lg mb-2"><?= htmlspecialchars($produto['nome']) ?></h3>
             <p class="text-sm text-gray-600 mb-2">Marca: <?= htmlspecialchars($produto['marca']) ?></p>
-            <p class="text-sm text-gray-600 mb-4">Preço curto: R$ <?= number_format($produto['precoCurto'], 2, ',', '.') ?></p>
+            <p class="text-sm text-gray-600 mb-1">Preço 1 (0-5 dias): R$ <?= number_format($produto['preco1'] ?? $produto['precoCurto'] ?? 0, 2, ',', '.') ?></p>
+            <p class="text-sm text-gray-600 mb-1">Preço 2 (6-15 dias): R$ <?= number_format($produto['preco2'] ?? $produto['precoLongo'] ?? 0, 2, ',', '.') ?></p>
+            <p class="text-sm text-gray-600 mb-4">Preço 3 (16-30 dias): R$ <?= number_format($produto['preco3'] ?? $produto['precoLongo'] ?? 0, 2, ',', '.') ?></p>
             <div class="flex gap-2">
                 <a href="/admin/produtos/<?= $produto['id'] ?>/edit" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded text-center text-sm hover:bg-blue-600">
                     Editar
@@ -41,8 +43,9 @@ ob_start();
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imagem</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Curto</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Longo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 1 (0-5)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 2 (6-15)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 3 (16-30)</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
             </thead>
@@ -59,10 +62,13 @@ ob_start();
                         <div class="text-sm text-gray-500"><?= htmlspecialchars($produto['marca']) ?></div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">R$ <?= number_format($produto['precoCurto'], 2, ',', '.') ?></div>
+                        <div class="text-sm text-gray-900">R$ <?= number_format($produto['preco1'] ?? $produto['precoCurto'] ?? 0, 2, ',', '.') ?></div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">R$ <?= number_format($produto['precoLongo'], 2, ',', '.') ?></div>
+                        <div class="text-sm text-gray-900">R$ <?= number_format($produto['preco2'] ?? $produto['precoLongo'] ?? 0, 2, ',', '.') ?></div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">R$ <?= number_format($produto['preco3'] ?? $produto['precoLongo'] ?? 0, 2, ',', '.') ?></div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a href="/admin/produtos/<?= $produto['id'] ?>/edit" class="text-blue-600 hover:text-blue-900 mr-4">Editar</a>

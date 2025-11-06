@@ -3,7 +3,7 @@ $title = 'Reservas - Admin';
 ob_start();
 ?>
 
-<div class="max-w-6xl mx-auto">
+<div class="max-w-8xl mx-auto">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 class="text-2xl lg:text-3xl font-heading font-semibold text-primary">Reservas</h1>
         <a href="/admin/reservas/create" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-opacity-90 transition-colors font-medium">
@@ -19,12 +19,13 @@ ob_start();
             <p class="text-sm text-gray-600 mb-1">CPF: <?= htmlspecialchars($reserva['cpf']) ?></p>
             <p class="text-sm text-gray-600 mb-1">Produto: <?= htmlspecialchars($reserva['produto_nome']) ?></p>
             <p class="text-sm text-gray-600 mb-1">Período: <?= date('d/m/Y', strtotime($reserva['data_inicio'])) ?> - <?= date('d/m/Y', strtotime($reserva['data_fim'])) ?></p>
+            <p class="text-sm text-gray-600 mb-1">Pagamento: <?= htmlspecialchars($reserva['forma_pagamento'] ?? 'PIX') ?></p>
             <div class="flex gap-2 mt-4">
                 <a href="/admin/reservas/<?= $reserva['id'] ?>/edit" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded text-center text-sm hover:bg-blue-600">
                     Editar
                 </a>
                 <a href="/admin/reservas/<?= $reserva['id'] ?>/pdf" class="flex-1 bg-green-500 text-white py-2 px-4 rounded text-center text-sm hover:bg-green-600">
-                    PDF
+                    Contrato
                 </a>
                 <form method="POST" action="/admin/reservas/<?= $reserva['id'] ?>/delete" class="flex-1" onsubmit="return confirm('Tem certeza que deseja excluir esta reserva?');">
                     <button type="submit" class="w-full bg-red-500 text-white py-2 px-4 rounded text-sm hover:bg-red-600">
@@ -45,6 +46,7 @@ ob_start();
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPF</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Período</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pagamento</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
             </thead>
@@ -65,9 +67,12 @@ ob_start();
                             <?= date('d/m/Y', strtotime($reserva['data_inicio'])) ?> - <?= date('d/m/Y', strtotime($reserva['data_fim'])) ?>
                         </div>
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900"><?= htmlspecialchars($reserva['forma_pagamento'] ?? 'PIX') ?></div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a href="/admin/reservas/<?= $reserva['id'] ?>/edit" class="text-blue-600 hover:text-blue-900 mr-4">Editar</a>
-                        <a href="/admin/reservas/<?= $reserva['id'] ?>/pdf" class="text-green-600 hover:text-green-900 mr-4">PDF</a>
+                        <a href="/admin/reservas/<?= $reserva['id'] ?>/pdf" class="text-green-600 hover:text-green-900 mr-4">Contrato</a>
                         <form method="POST" action="/admin/reservas/<?= $reserva['id'] ?>/delete" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir esta reserva?');">
                             <button type="submit" class="text-red-600 hover:text-red-900">Excluir</button>
                         </form>

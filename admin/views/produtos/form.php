@@ -80,31 +80,45 @@ ob_start();
                 >
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label for="precoCurto" class="block text-sm font-medium text-gray-700 mb-1">Preço Curto (0-5 dias) *</label>
+                    <label for="preco1" class="block text-sm font-medium text-gray-700 mb-1">Preço 1 (0 a 5 dias) *</label>
                     <input 
                         type="number" 
-                        id="precoCurto" 
-                        name="precoCurto" 
+                        id="preco1" 
+                        name="preco1" 
                         step="0.01" 
                         min="0" 
                         required 
-                        value="<?= htmlspecialchars($produto['precoCurto'] ?? $data['precoCurto'] ?? '') ?>"
+                        value="<?= htmlspecialchars($produto['preco1'] ?? $produto['precoCurto'] ?? $data['preco1'] ?? $data['precoCurto'] ?? '') ?>"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     >
                 </div>
 
                 <div>
-                    <label for="precoLongo" class="block text-sm font-medium text-gray-700 mb-1">Preço Longo (+5 dias) *</label>
+                    <label for="preco2" class="block text-sm font-medium text-gray-700 mb-1">Preço 2 (6 a 15 dias) *</label>
                     <input 
                         type="number" 
-                        id="precoLongo" 
-                        name="precoLongo" 
+                        id="preco2" 
+                        name="preco2" 
                         step="0.01" 
                         min="0" 
                         required 
-                        value="<?= htmlspecialchars($produto['precoLongo'] ?? $data['precoLongo'] ?? '') ?>"
+                        value="<?= htmlspecialchars($produto['preco2'] ?? $produto['precoLongo'] ?? $data['preco2'] ?? $data['precoLongo'] ?? '') ?>"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    >
+                </div>
+
+                <div>
+                    <label for="preco3" class="block text-sm font-medium text-gray-700 mb-1">Preço 3 (16 a 30 dias) *</label>
+                    <input 
+                        type="number" 
+                        id="preco3" 
+                        name="preco3" 
+                        step="0.01" 
+                        min="0" 
+                        required 
+                        value="<?= htmlspecialchars($produto['preco3'] ?? $produto['precoLongo'] ?? $data['preco3'] ?? $data['precoLongo'] ?? '') ?>"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                     >
                 </div>

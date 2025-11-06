@@ -16,7 +16,7 @@ class Reserva
     public function all()
     {
         $sql = "SELECT r.*, p.nome as produto_nome, p.imagem as produto_imagem, p.marca as produto_marca,
-                p.precoCurto, p.precoLongo
+                p.preco1, p.preco2, p.preco3
                 FROM reservas r
                 INNER JOIN produtos p ON r.produto_id = p.id
                 ORDER BY r.criado_em DESC";
@@ -27,7 +27,7 @@ class Reserva
     public function find($id)
     {
         $sql = "SELECT r.*, p.nome as produto_nome, p.imagem as produto_imagem, p.marca as produto_marca,
-                p.precoCurto, p.precoLongo, p.tipoInstalacao, p.orientacao, p.descricao as produto_descricao
+                p.preco1, p.preco2, p.preco3, p.tipoInstalacao, p.orientacao, p.descricao as produto_descricao
                 FROM reservas r
                 INNER JOIN produtos p ON r.produto_id = p.id
                 WHERE r.id = ?";
@@ -38,8 +38,8 @@ class Reserva
 
     public function create($data)
     {
-        $sql = "INSERT INTO reservas (produto_id, nome_completo, cpf, endereco, data_inicio, data_fim) 
-                VALUES (:produto_id, :nome_completo, :cpf, :endereco, :data_inicio, :data_fim)";
+        $sql = "INSERT INTO reservas (produto_id, nome_completo, cpf, endereco, data_inicio, data_fim, forma_pagamento) 
+                VALUES (:produto_id, :nome_completo, :cpf, :endereco, :data_inicio, :data_fim, :forma_pagamento)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -49,6 +49,7 @@ class Reserva
             ':endereco' => $data['endereco'],
             ':data_inicio' => $data['data_inicio'],
             ':data_fim' => $data['data_fim'],
+            ':forma_pagamento' => $data['forma_pagamento'] ?? 'PIX',
         ]);
 
         return $this->db->lastInsertId();
@@ -63,6 +64,7 @@ class Reserva
                 endereco = :endereco,
                 data_inicio = :data_inicio,
                 data_fim = :data_fim,
+                forma_pagamento = :forma_pagamento,
                 atualizado_em = CURRENT_TIMESTAMP
                 WHERE id = :id";
         
@@ -75,6 +77,7 @@ class Reserva
             ':endereco' => $data['endereco'],
             ':data_inicio' => $data['data_inicio'],
             ':data_fim' => $data['data_fim'],
+            ':forma_pagamento' => $data['forma_pagamento'] ?? 'PIX',
         ]);
     }
 

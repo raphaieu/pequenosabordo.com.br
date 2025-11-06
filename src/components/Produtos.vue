@@ -22,11 +22,13 @@
             class="swiper-slide"
           >
             <div class="room-item">
-              <img
-                :src="produto.imagem"
-                :alt="produto.nome"
-                class="post-image w-full h-[300px] object-cover"
-              />
+              <div class="image-container">
+                <img
+                  :src="produto.imagem"
+                  :alt="produto.nome"
+                  class="post-image w-full h-full object-cover"
+                />
+              </div>
               <div class="product-description">
                 <h4 class="text-xl md:text-2xl font-heading font-normal text-white mb-3">{{ produto.nome }}</h4>
                 <div class="space-y-2 mb-4">
@@ -46,16 +48,19 @@
               </div>
             </div>
             <div class="room-content mt-4">
-              <h4 class="text-xl md:text-2xl font-heading font-normal text-center mb-3">
+              <h4 class="text-xl md:text-2xl font-heading font-normal text-center mb-3 min-h-[3.5rem] md:min-h-[4rem] flex items-center justify-center">
                 <a href="javascript:void(0);" @click="reservar(produto.id)" class="hover:text-primary transition-colors">
                   {{ produto.nome }}
                 </a>
               </h4>
               <p class="text-center mb-2">
-                0 a 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.precoCurto) }}</span> / dia
+                0 a 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}</span> / dia
+              </p>
+              <p class="text-center mb-2">
+                6 a 15 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco2 || produto.precoLongo) }}</span> / dia
               </p>
               <p class="text-center mb-4">
-                + 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.precoLongo) }}</span> / dia
+                16 a 30 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco3 || produto.precoLongo) }}</span> / dia
               </p>
               <p class="text-gray-500 text-xs md:text-sm leading-relaxed">
                 {{ produto.descricao }}
@@ -154,6 +159,14 @@ export default {
 <style scoped>
 .room-item {
   @apply relative overflow-hidden rounded-2xl bg-black;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  display: block;
 }
 
 .room-item img.post-image {

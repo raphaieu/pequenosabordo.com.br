@@ -11,8 +11,9 @@ CREATE TABLE IF NOT EXISTS produtos (
     marca VARCHAR(100) NOT NULL,
     tipoInstalacao VARCHAR(255) NULL,
     orientacao VARCHAR(255) NULL,
-    precoCurto DECIMAL(10,2) NOT NULL,
-    precoLongo DECIMAL(10,2) NOT NULL,
+    preco1 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 0 a 5 dias',
+    preco2 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 6 a 15 dias',
+    preco3 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 16 a 30 dias',
     descricao TEXT NOT NULL,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS reservas (
     endereco TEXT NOT NULL,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
+    forma_pagamento VARCHAR(50) NOT NULL DEFAULT 'PIX' COMMENT 'Forma de pagamento: PIX, Cartão de Crédito (máquininha), Espécie, Link de Pagamento',
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE RESTRICT

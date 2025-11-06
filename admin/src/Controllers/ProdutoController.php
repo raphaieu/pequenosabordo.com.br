@@ -66,8 +66,9 @@ class ProdutoController
                 'marca' => $data['marca'],
                 'tipoInstalacao' => $data['tipoInstalacao'] ?? null,
                 'orientacao' => $data['orientacao'] ?? null,
-                'precoCurto' => floatval($data['precoCurto']),
-                'precoLongo' => floatval($data['precoLongo']),
+                'preco1' => floatval($data['preco1']),
+                'preco2' => floatval($data['preco2']),
+                'preco3' => floatval($data['preco3']),
                 'descricao' => $data['descricao'],
             ];
 
@@ -136,8 +137,9 @@ class ProdutoController
                 'marca' => $data['marca'],
                 'tipoInstalacao' => $data['tipoInstalacao'] ?? null,
                 'orientacao' => $data['orientacao'] ?? null,
-                'precoCurto' => floatval($data['precoCurto']),
-                'precoLongo' => floatval($data['precoLongo']),
+                'preco1' => floatval($data['preco1']),
+                'preco2' => floatval($data['preco2']),
+                'preco3' => floatval($data['preco3']),
                 'descricao' => $data['descricao'],
             ];
 

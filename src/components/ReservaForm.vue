@@ -27,8 +27,9 @@
         id="produto-select"
         class="form-control text-gray-500 border border-dark rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-primary"
         v-model="produtoSelecionado"
+        :disabled="loading"
       >
-        <option value="">-- selecione --</option>
+        <option value="">{{ loading ? 'Carregando...' : '-- selecione --' }}</option>
         <option v-for="produto in produtos" :key="produto.id" :value="produto.id">
           {{ produto.nome }}
         </option>
@@ -54,8 +55,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
-import { produtos } from '../data/produtos.js'
+import { ref, computed, onMounted } from 'vue'
+import { produtos as produtosEstaticos } from '../data/produtos.js'
+import { api } from '../services/api.js'
 
 export default {
   name: 'ReservaForm',
@@ -63,11 +65,31 @@ export default {
     const checkIn = ref('')
     const checkOut = ref('')
     const produtoSelecionado = ref('')
+    const produtos = ref([])
+    const loading = ref(true)
 
-    // Definir data de hoje como padrão
-    onMounted(() => {
+    // Buscar produtos da API
+    onMounted(async () => {
+      // Define data de hoje como padrão
       const today = new Date().toISOString().split('T')[0]
       checkIn.value = today
+
+      // Busca produtos da API
+      try {
+        const produtosApi = await api.getProdutos()
+        if (produtosApi && produtosApi.length > 0) {
+          produtos.value = produtosApi
+        } else {
+          // Fallback para produtos estáticos se API não retornar dados
+          produtos.value = produtosEstaticos
+        }
+      } catch (error) {
+        console.error('Erro ao buscar produtos:', error)
+        // Fallback para produtos estáticos em caso de erro
+        produtos.value = produtosEstaticos
+      } finally {
+        loading.value = false
+      }
     })
 
     const isFormValid = computed(() => {
@@ -77,7 +99,12 @@ export default {
     const verificarDisponibilidade = () => {
       if (!isFormValid.value) return
 
-      const produto = produtos.find(p => p.id === parseInt(produtoSelecionado.value))
+      const produto = produtos.value.find(p => p.id === parseInt(produtoSelecionado.value))
+      if (!produto) {
+        console.error('Produto não encontrado')
+        return
+      }
+
       const mensagem = `Tenho interesse na locação do ${produto.nome} a partir do dia ${checkIn.value} até o dia ${checkOut.value}`
       const whatsappUrl = `https://wa.me/5571996012735?text=${encodeURIComponent(mensagem)}`
 
@@ -117,6 +144,7 @@ export default {
       checkOut,
       produtoSelecionado,
       produtos,
+      loading,
       isFormValid,
       verificarDisponibilidade,
       selecionarProduto,

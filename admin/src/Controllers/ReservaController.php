@@ -71,6 +71,7 @@ class ReservaController
                 'endereco' => $data['endereco'],
                 'data_inicio' => $data['data_inicio'],
                 'data_fim' => $data['data_fim'],
+                'forma_pagamento' => $data['forma_pagamento'] ?? 'PIX',
             ];
 
             $this->reserva->create($reservaData);
@@ -139,6 +140,7 @@ class ReservaController
                 'endereco' => $data['endereco'],
                 'data_inicio' => $data['data_inicio'],
                 'data_fim' => $data['data_fim'],
+                'forma_pagamento' => $data['forma_pagamento'] ?? 'PIX',
             ];
 
             $this->reserva->update($args['id'], $reservaData);
@@ -190,8 +192,9 @@ class ReservaController
             'produto_marca' => $reserva['produto_marca'],
             'tipoInstalacao' => $reserva['tipoInstalacao'] ?? null,
             'orientacao' => $reserva['orientacao'] ?? null,
-            'precoCurto' => $reserva['precoCurto'],
-            'precoLongo' => $reserva['precoLongo'],
+            'preco1' => $reserva['preco1'] ?? $reserva['precoCurto'] ?? 0,
+            'preco2' => $reserva['preco2'] ?? $reserva['precoLongo'] ?? 0,
+            'preco3' => $reserva['preco3'] ?? $reserva['precoLongo'] ?? 0,
         ];
 
         $pdfContent = $this->pdfService->generateContract($reserva, $produto);

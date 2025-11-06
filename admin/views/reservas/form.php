@@ -96,6 +96,29 @@ ob_start();
                 </div>
             </div>
 
+            <div>
+                <label for="forma_pagamento" class="block text-sm font-medium text-gray-700 mb-1">Forma de Pagamento *</label>
+                <select 
+                    id="forma_pagamento" 
+                    name="forma_pagamento" 
+                    required 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                >
+                    <option value="PIX" <?= (isset($reserva['forma_pagamento']) && $reserva['forma_pagamento'] == 'PIX') || (!isset($reserva['forma_pagamento']) && (!isset($data['forma_pagamento']) || $data['forma_pagamento'] == 'PIX')) ? 'selected' : '' ?>>
+                        PIX
+                    </option>
+                    <option value="Cartão de Crédito (máquininha)" <?= (isset($reserva['forma_pagamento']) && $reserva['forma_pagamento'] == 'Cartão de Crédito (máquininha)') || (isset($data['forma_pagamento']) && $data['forma_pagamento'] == 'Cartão de Crédito (máquininha)') ? 'selected' : '' ?>>
+                        Cartão de Crédito (máquininha)
+                    </option>
+                    <option value="Espécie" <?= (isset($reserva['forma_pagamento']) && $reserva['forma_pagamento'] == 'Espécie') || (isset($data['forma_pagamento']) && $data['forma_pagamento'] == 'Espécie') ? 'selected' : '' ?>>
+                        Espécie
+                    </option>
+                    <option value="Link de Pagamento" <?= (isset($reserva['forma_pagamento']) && $reserva['forma_pagamento'] == 'Link de Pagamento') || (isset($data['forma_pagamento']) && $data['forma_pagamento'] == 'Link de Pagamento') ? 'selected' : '' ?>>
+                        Link de Pagamento
+                    </option>
+                </select>
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-4 pt-4">
                 <button 
                     type="submit" 

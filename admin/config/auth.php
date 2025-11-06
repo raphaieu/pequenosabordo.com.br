@@ -2,7 +2,7 @@
 
 // Credenciais hardcoded
 return [
-    'username' => 'admin',
-    'password' => 'admin123', // Em produção, altere para uma senha forte
+    'username' => 'priscila',
+    'password' => 'p1m3nt4', // Em produção, altere para uma senha forte
 ];
 

@@ -21,10 +21,21 @@ class PdfService
         $dataFim = new \DateTime($reserva['data_fim']);
         $dias = $dataInicio->diff($dataFim)->days;
         
-        $precoPorDia = $dias <= 5 ? $produto['precoCurto'] : $produto['precoLongo'];
+        // Determina preço baseado no número de dias
+        // 0 a 5 dias: preco1
+        // 6 a 15 dias: preco2
+        // 16 a 30 dias: preco3
+        if ($dias <= 5) {
+            $precoPorDia = $produto['preco1'] ?? $produto['precoCurto'] ?? 0;
+        } elseif ($dias <= 15) {
+            $precoPorDia = $produto['preco2'] ?? $produto['precoLongo'] ?? 0;
+        } else {
+            $precoPorDia = $produto['preco3'] ?? $produto['precoLongo'] ?? 0;
+        }
         $valorTotal = $dias * $precoPorDia;
 
-        $html = $this->getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia);
+        $formaPagamento = $reserva['forma_pagamento'] ?? 'PIX';
+        $html = $this->getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia, $formaPagamento);
 
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
@@ -33,7 +44,7 @@ class PdfService
         return $dompdf->output();
     }
 
-    private function getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia)
+    private function getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia, $formaPagamento)
     {
         $dataAtual = date('d/m/Y');
         $dataInicio = date('d/m/Y', strtotime($reserva['data_inicio']));
@@ -42,6 +53,8 @@ class PdfService
         // Prepara valores que podem ser null
         $tipoInstalacao = isset($produto['tipoInstalacao']) && $produto['tipoInstalacao'] ? $produto['tipoInstalacao'] : 'N/A';
         $orientacao = isset($produto['orientacao']) && $produto['orientacao'] ? $produto['orientacao'] : 'N/A';
+        $valorTotalFormatado = number_format($valorTotal, 2, ',', '.');
+        $precoPorDiaFormatado = number_format($precoPorDia, 2, ',', '.');
 
         return <<<HTML
 <!DOCTYPE html>
@@ -52,36 +65,39 @@ class PdfService
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 12px;
-            line-height: 1.6;
+            line-height: 1.4;
             padding: 20px;
         }
         h1 {
             text-align: center;
-            font-size: 20px;
-            margin-bottom: 30px;
+            font-size: 18px;
+            margin-bottom: 25px;
             border-bottom: 2px solid #000;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
         h2 {
-            font-size: 16px;
+            font-size: 14px;
             margin-top: 20px;
             margin-bottom: 10px;
         }
+        p {
+            font-size: 12px;
+        }
         .contract-info {
-            margin-bottom: 20px;
+            margin: 50px auto 0;
+            text-align: center;
         }
         .contract-info p {
-            margin: 5px 0;
+            margin: 4px 0;
         }
         .signature-section {
-            margin-top: 40px;
+            margin: 12px auto 0;
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
         }
         .signature-box {
-            width: 45%;
-            border-top: 1px solid #000;
-            padding-top: 10px;
+            width: 100%;
+            padding-top: 20px;
             text-align: center;
         }
         table {
@@ -90,7 +106,7 @@ class PdfService
             margin: 20px 0;
         }
         table td {
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #ddd;
         }
         table td:first-child {
@@ -100,11 +116,23 @@ class PdfService
     </style>
 </head>
 <body>
-    <h1>CONTRATO DE LOCAÇÃO DE PRODUTO INFANTIL</h1>
+    <h1>CONTRATO DE LOCAÇÃO DE EQUIPAMENTOS INFANTIS</h1>
     
-    <div class="contract-info">
-        <p><strong>Data do Contrato:</strong> {$dataAtual}</p>
-    </div>
+    <h2>DADOS DO LOCADOR</h2>
+    <table>
+        <tr>
+            <td>Nome Completo:</td>
+            <td>Pequenos a Bordo - Priscila Martins Pimenta</td>
+        </tr>
+        <tr>
+            <td>CPF:</td>
+            <td>008.158.635-35</td>
+        </tr>
+        <tr>
+            <td>Endereço:</td>
+            <td>Rua Edmundo Loureiro, 02 - Itapuã, Salvador/BA, CEP 41.630-395</td>
+        </tr>
+    </table>
 
     <h2>DADOS DO LOCATÁRIO</h2>
     <table>
@@ -122,7 +150,8 @@ class PdfService
         </tr>
     </table>
 
-    <h2>DADOS DO PRODUTO</h2>
+    <h2>CLÁUSULA 1 - OBJETO</h2>
+    <p>O presente contrato tem por objeto a locação do(s) seguinte(s) item(ns) infantil(is):</p>
     <table>
         <tr>
             <td>Produto:</td>
@@ -142,27 +171,15 @@ class PdfService
         </tr>
     </table>
 
-    <h2>PERÍODO DE LOCAÇÃO</h2>
-    <table>
-        <tr>
-            <td>Data de Início:</td>
-            <td>{$dataInicio}</td>
-        </tr>
-        <tr>
-            <td>Data de Término:</td>
-            <td>{$dataFim}</td>
-        </tr>
-        <tr>
-            <td>Período:</td>
-            <td>{$dias} dia(s)</td>
-        </tr>
-    </table>
-
-    <h2>VALORES</h2>
+    <h2>CLÁUSULA 2 - PRAZO</h2>
+    <p>A locação será realizada no período de {$dataInicio} a {$dataFim}, totalizando {$dias} dia(s).</p>
+    
+    <h2>CLÁUSULA 3 - VALOR E PAGAMENTO</h2>
+    <p>O LOCATÁRIO pagará ao LOCADOR o valor total de R$ {$valorTotalFormatado} pela locação, via {$formaPagamento}, até o momento da entrega.</p>
     <table>
         <tr>
             <td>Preço por dia:</td>
-            <td>R$ " . number_format($precoPorDia, 2, ',', '.') . "</td>
+            <td>R$ {$precoPorDiaFormatado}</td>
         </tr>
         <tr>
             <td>Total de dias:</td>
@@ -170,27 +187,40 @@ class PdfService
         </tr>
         <tr>
             <td><strong>Valor Total:</strong></td>
-            <td><strong>R$ " . number_format($valorTotal, 2, ',', '.') . "</strong></td>
+            <td><strong>R$ {$valorTotalFormatado}</strong></td>
         </tr>
     </table>
 
-    <h2>TERMOS E CONDIÇÕES</h2>
-    <p>1. O locatário se compromete a devolver o produto no prazo estabelecido e em perfeito estado de conservação.</p>
-    <p>2. Em caso de atraso na devolução, será cobrada multa proporcional ao período excedente.</p>
-    <p>3. Em caso de danos ao produto, o locatário será responsável pelo reparo ou substituição do mesmo.</p>
-    <p>4. O produto deve ser usado exclusivamente para o fim a que se destina.</p>
-    <p>5. Este contrato é regido pelas leis brasileiras e qualquer litígio será resolvido no foro da comarca de Salvador-BA.</p>
+    <h2>CLÁUSULA 4 - ENTREGA E DEVOLUÇÃO</h2>
+    <p>4.1 A entrega será realizada no endereço acordado.</p>
+    <p>4.2 A devolução deverá ocorrer até o final do dia acordado.</p>
+    <p>4.3 Em caso de atraso, será cobrada multa de R$ 20,00 por dia.</p>
+    
+    <h2>CLÁUSULA 5 - CONSERVAÇÃO E USO</h2>
+    <p>O LOCATÁRIO se compromete a zelar pelos itens. Em caso de danos ou perda, será cobrado o valor de reposição.</p>
+    
+    <h2>CLÁUSULA 6 - CANCELAMENTO</h2>
+    <p>Cancelamento com menos de 24h: retenção de 50%.</p>
+    <p>Com mais de 24h: reembolso integral.</p>
+    
+    <h2>CLÁUSULA 7 - RESPONSABILIDADE</h2>
+    <p>O LOCADOR não se responsabiliza por acidentes causados por uso inadequado dos itens.</p>
 
-    <div class="signature-section">
-        <div class="signature-box">
-            <p><strong>LOCADOR</strong></p>
-            <p>Pequenos a Bordo</p>
-            <p style="margin-top: 40px;">_________________________________</p>
-        </div>
-        <div class="signature-box">
-            <p><strong>LOCATÁRIO</strong></p>
-            <p>{$reserva['nome_completo']}</p>
-            <p style="margin-top: 40px;">_________________________________</p>
+    <h2>CLÁUSULA 8 - FORO</h2>
+    <p>Fica eleito o foro da Comarca de Salvador/BA.</p>
+
+    <div class="contract-info">
+        <p><strong>Salvador/BA, {$dataAtual}</strong></p>
+        <div class="signature-section">
+            <div class="signature-box">
+                <p style="margin-top: 40px;">______________________________________</p>
+                <p><strong>Pequenos a Bordo<br>LOCADOR</strong></p>
+            </div>
+            <p>&nbsp;</p>
+            <div class="signature-box">
+                <p style="margin-top: 40px;">______________________________________</p>
+                <p><strong>{$reserva['nome_completo']}<br>LOCATÁRIO</strong></p>
+            </div>
         </div>
     </div>
 </body>
