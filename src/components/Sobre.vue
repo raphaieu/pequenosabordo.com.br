@@ -8,7 +8,7 @@
         <div class="w-full lg:w-1/2">
           <div class="p-5 md:p-8 mb-6">
             <p class="mb-4 text-base md:text-lg leading-relaxed">
-              O 'Pequenos a Bordo' nasceu do meu desejo como Mãe de proporcionar a melhor experiência para famílias, através de um serviço que ofereça segurança, praticidade e conforto para seu Bebê durante a sua estadia Bahia.
+              O 'Pequenos a Bordo' nasceu do meu desejo como Mãe de proporcionar a melhor experiência para famílias, através de um serviço que ofereça segurança, praticidade e conforto para seu Bebê durante a sua estadia na Bahia.
             </p>
             <p class="text-base md:text-lg leading-relaxed">
               Com um atendimento humanizado entendendo as necessidades singulares de cada família me inspirou a começar essa bela jornada.

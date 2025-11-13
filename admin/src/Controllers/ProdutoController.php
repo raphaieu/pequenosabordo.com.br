@@ -186,5 +186,35 @@ class ProdutoController
                 ->withHeader('Location', '/admin/produtos?error=' . urlencode($e->getMessage()));
         }
     }
+
+    public function updateOrder(Request $request, Response $response): Response
+    {
+        // Lê o body como JSON
+        $body = $request->getBody()->getContents();
+        $data = json_decode($body, true);
+        
+        // Se não conseguir decodificar JSON, tenta getParsedBody (form data)
+        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+            $data = $request->getParsedBody();
+        }
+        
+        try {
+            if (!isset($data['orders']) || !is_array($data['orders'])) {
+                throw new \Exception('Dados de ordenação inválidos');
+            }
+
+            $this->produto->updateOrder($data['orders']);
+
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Ordem atualizada com sucesso']));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        } catch (\Exception $e) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+    }
 }
 

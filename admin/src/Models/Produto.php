@@ -15,7 +15,7 @@ class Produto
 
     public function all()
     {
-        $stmt = $this->db->query("SELECT * FROM produtos ORDER BY criado_em ASC");
+        $stmt = $this->db->query("SELECT * FROM produtos ORDER BY ordem ASC, id ASC");
         return $stmt->fetchAll();
     }
 
@@ -28,8 +28,13 @@ class Produto
 
     public function create($data)
     {
-        $sql = "INSERT INTO produtos (nome, imagem, marca, tipoInstalacao, orientacao, preco1, preco2, preco3, descricao) 
-                VALUES (:nome, :imagem, :marca, :tipoInstalacao, :orientacao, :preco1, :preco2, :preco3, :descricao)";
+        // Busca a maior ordem atual para colocar o novo produto no final
+        $stmt = $this->db->query("SELECT COALESCE(MAX(ordem), 0) as max_ordem FROM produtos");
+        $result = $stmt->fetch();
+        $novaOrdem = ($result['max_ordem'] ?? 0) + 1;
+        
+        $sql = "INSERT INTO produtos (nome, imagem, marca, tipoInstalacao, orientacao, preco1, preco2, preco3, descricao, ordem) 
+                VALUES (:nome, :imagem, :marca, :tipoInstalacao, :orientacao, :preco1, :preco2, :preco3, :descricao, :ordem)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -42,6 +47,7 @@ class Produto
             ':preco2' => $data['preco2'],
             ':preco3' => $data['preco3'],
             ':descricao' => $data['descricao'],
+            ':ordem' => $novaOrdem,
         ]);
 
         return $this->db->lastInsertId();
@@ -81,6 +87,26 @@ class Produto
     {
         $stmt = $this->db->prepare("DELETE FROM produtos WHERE id = ?");
         return $stmt->execute([$id]);
+    }
+
+    public function updateOrder($orders)
+    {
+        // $orders é um array: ['id' => nova_ordem, ...]
+        $this->db->beginTransaction();
+        try {
+            foreach ($orders as $id => $ordem) {
+                $stmt = $this->db->prepare("UPDATE produtos SET ordem = :ordem WHERE id = :id");
+                $stmt->execute([
+                    ':id' => $id,
+                    ':ordem' => $ordem
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 }
 

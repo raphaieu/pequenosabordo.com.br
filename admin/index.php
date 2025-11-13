@@ -133,11 +133,12 @@ $uploadService = new UploadService();
 $pdfService = new PdfService();
 $produtoModel = new Produto($pdo);
 $reservaModel = new Reserva($pdo);
+$reservaProdutoModel = new \App\Models\ReservaProduto($pdo);
 
 // Instancia controllers
 $authController = new AuthController();
 $produtoController = new ProdutoController($produtoModel, $uploadService);
-$reservaController = new ReservaController($reservaModel, $produtoModel, $pdfService);
+$reservaController = new ReservaController($reservaModel, $produtoModel, $reservaProdutoModel, $pdfService);
 
 // Middleware de autenticação
 $authMiddleware = new AuthMiddleware();
@@ -208,6 +209,7 @@ $app->post('/produtos/store', [$produtoController, 'store'])->add($authMiddlewar
 $app->get('/produtos/{id}/edit', [$produtoController, 'edit'])->add($authMiddleware);
 $app->post('/produtos/{id}/update', [$produtoController, 'update'])->add($authMiddleware);
 $app->post('/produtos/{id}/delete', [$produtoController, 'delete'])->add($authMiddleware);
+$app->post('/produtos/update-order', [$produtoController, 'updateOrder'])->add($authMiddleware);
 
 // Rotas protegidas - Reservas
 $app->get('/reservas', [$reservaController, 'index'])->add($authMiddleware);

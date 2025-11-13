@@ -1,6 +1,12 @@
 <?php
 $title = ($reserva ? 'Editar' : 'Nova') . ' Reserva - Admin';
 ob_start();
+$produtosSelecionados = [];
+if (isset($reserva['produtos_selecionados']) && is_array($reserva['produtos_selecionados'])) {
+    foreach ($reserva['produtos_selecionados'] as $prod) {
+        $produtosSelecionados[] = $prod['produto_id'];
+    }
+}
 ?>
 
 <div class="max-w-3xl mx-auto">
@@ -15,23 +21,20 @@ ob_start();
     <?php endif; ?>
 
     <div class="bg-white rounded-lg shadow-md p-6 lg:p-8">
-        <form method="POST" action="<?= $action ?>" class="space-y-4">
+        <form method="POST" action="<?= $action ?>" class="space-y-4" id="reserva-form">
+            <!-- Seção de Produtos -->
             <div>
-                <label for="produto_id" class="block text-sm font-medium text-gray-700 mb-1">Produto *</label>
-                <select 
-                    id="produto_id" 
-                    name="produto_id" 
-                    required 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Produtos *</label>
+                <div id="produtos-container" class="space-y-3">
+                    <!-- Produto será adicionado aqui via JavaScript -->
+                </div>
+                <button 
+                    type="button" 
+                    id="adicionar-produto" 
+                    class="mt-3 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors text-sm font-medium"
                 >
-                    <option value="">Selecione um produto</option>
-                    <?php foreach ($produtos as $produto): ?>
-                    <option value="<?= $produto['id'] ?>" 
-                        <?= (isset($reserva['produto_id']) && $reserva['produto_id'] == $produto['id']) || (isset($data['produto_id']) && $data['produto_id'] == $produto['id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($produto['nome']) ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
+                    + Adicionar Produto
+                </button>
             </div>
 
             <div>
@@ -137,8 +140,103 @@ ob_start();
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const produtosContainer = document.getElementById('produtos-container');
+    const adicionarBtn = document.getElementById('adicionar-produto');
+    const produtos = <?= json_encode($produtos) ?>;
+    const produtosSelecionados = <?= json_encode($produtosSelecionados) ?>;
+    let produtoCounter = 0;
+
+    // Template para um campo de produto
+    function criarCampoProduto(produtoIdSelecionado = '') {
+        const index = produtoCounter++;
+        const div = document.createElement('div');
+        div.className = 'produto-item flex gap-2 items-end';
+        div.innerHTML = `
+            <div class="flex-1">
+                <select 
+                    name="produtos[]" 
+                    class="produto-select w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    required
+                >
+                    <option value="">Selecione um produto</option>
+                    ${produtos.map(p => `
+                        <option value="${p.id}" ${p.id == produtoIdSelecionado ? 'selected' : ''}>
+                            ${p.nome}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+            <button 
+                type="button" 
+                class="remover-produto bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm"
+                ${produtoCounter === 1 ? 'style="display:none;"' : ''}
+            >
+                Remover
+            </button>
+        `;
+        
+        // Adiciona evento de remoção
+        div.querySelector('.remover-produto').addEventListener('click', function() {
+            div.remove();
+            atualizarBotoesRemover();
+        });
+        
+        return div;
+    }
+
+    function atualizarBotoesRemover() {
+        const items = produtosContainer.querySelectorAll('.produto-item');
+        items.forEach((item, index) => {
+            const btn = item.querySelector('.remover-produto');
+            if (items.length === 1) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'block';
+            }
+        });
+    }
+
+    // Adiciona primeiro produto
+    if (produtosSelecionados.length > 0) {
+        produtosSelecionados.forEach(prodId => {
+            produtosContainer.appendChild(criarCampoProduto(prodId));
+        });
+    } else {
+        produtosContainer.appendChild(criarCampoProduto());
+    }
+    atualizarBotoesRemover();
+
+    // Adiciona novo produto
+    adicionarBtn.addEventListener('click', function() {
+        produtosContainer.appendChild(criarCampoProduto());
+        atualizarBotoesRemover();
+    });
+
+    // Validação antes de enviar
+    document.getElementById('reserva-form').addEventListener('submit', function(e) {
+        const selects = produtosContainer.querySelectorAll('.produto-select');
+        const valores = Array.from(selects).map(s => s.value).filter(v => v);
+        
+        if (valores.length === 0) {
+            e.preventDefault();
+            alert('Selecione pelo menos um produto');
+            return false;
+        }
+        
+        // Remove duplicatas
+        const unicos = [...new Set(valores)];
+        if (unicos.length !== valores.length) {
+            e.preventDefault();
+            alert('Não é possível selecionar o mesmo produto mais de uma vez');
+            return false;
+        }
+    });
+});
+</script>
+
 <?php
 $content = ob_get_clean();
 include __DIR__ . '/../layout.php';
 ?>
-

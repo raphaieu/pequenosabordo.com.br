@@ -7,7 +7,7 @@ use Dompdf\Options;
 
 class PdfService
 {
-    public function generateContract($reserva, $produto)
+    public function generateContract($reserva, $produtos)
     {
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -16,26 +16,45 @@ class PdfService
 
         $dompdf = new Dompdf($options);
 
-        // Calcula dias e valor
+        // Garante que produtos seja um array
+        if (!is_array($produtos)) {
+            $produtos = [$produtos];
+        }
+
+        // Calcula dias
         $dataInicio = new \DateTime($reserva['data_inicio']);
         $dataFim = new \DateTime($reserva['data_fim']);
         $dias = $dataInicio->diff($dataFim)->days;
         
-        // Determina preço baseado no número de dias
-        // 0 a 5 dias: preco1
-        // 6 a 15 dias: preco2
-        // 16 a 30 dias: preco3
-        if ($dias <= 5) {
-            $precoPorDia = $produto['preco1'] ?? $produto['precoCurto'] ?? 0;
-        } elseif ($dias <= 15) {
-            $precoPorDia = $produto['preco2'] ?? $produto['precoLongo'] ?? 0;
-        } else {
-            $precoPorDia = $produto['preco3'] ?? $produto['precoLongo'] ?? 0;
+        // Calcula valores para cada produto
+        $produtosCalculados = [];
+        $valorTotal = 0;
+        
+        foreach ($produtos as $produto) {
+            // Determina preço baseado no número de dias
+            // 0 a 5 dias: preco1
+            // 6 a 15 dias: preco2
+            // 16 a 30 dias: preco3
+            if ($dias <= 5) {
+                $precoPorDia = $produto['preco1'] ?? $produto['precoCurto'] ?? 0;
+            } elseif ($dias <= 15) {
+                $precoPorDia = $produto['preco2'] ?? $produto['precoLongo'] ?? 0;
+            } else {
+                $precoPorDia = $produto['preco3'] ?? $produto['precoLongo'] ?? 0;
+            }
+            
+            $valorProduto = $dias * $precoPorDia;
+            $valorTotal += $valorProduto;
+            
+            $produtosCalculados[] = [
+                'produto' => $produto,
+                'precoPorDia' => $precoPorDia,
+                'valorTotal' => $valorProduto,
+            ];
         }
-        $valorTotal = $dias * $precoPorDia;
 
         $formaPagamento = $reserva['forma_pagamento'] ?? 'PIX';
-        $html = $this->getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia, $formaPagamento);
+        $html = $this->getContractHtml($reserva, $produtosCalculados, $dias, $valorTotal, $formaPagamento);
 
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
@@ -44,17 +63,49 @@ class PdfService
         return $dompdf->output();
     }
 
-    private function getContractHtml($reserva, $produto, $dias, $valorTotal, $precoPorDia, $formaPagamento)
+    private function getContractHtml($reserva, $produtosCalculados, $dias, $valorTotal, $formaPagamento)
     {
         $dataAtual = date('d/m/Y');
         $dataInicio = date('d/m/Y', strtotime($reserva['data_inicio']));
         $dataFim = date('d/m/Y', strtotime($reserva['data_fim']));
         
-        // Prepara valores que podem ser null
-        $tipoInstalacao = isset($produto['tipoInstalacao']) && $produto['tipoInstalacao'] ? $produto['tipoInstalacao'] : 'N/A';
-        $orientacao = isset($produto['orientacao']) && $produto['orientacao'] ? $produto['orientacao'] : 'N/A';
         $valorTotalFormatado = number_format($valorTotal, 2, ',', '.');
-        $precoPorDiaFormatado = number_format($precoPorDia, 2, ',', '.');
+        
+        // Monta tabela de produtos
+        $produtosHtml = '';
+        foreach ($produtosCalculados as $item) {
+            $produto = $item['produto'];
+            $precoPorDia = $item['precoPorDia'];
+            $valorProduto = $item['valorTotal'];
+            $tipoInstalacao = isset($produto['tipoInstalacao']) && $produto['tipoInstalacao'] ? $produto['tipoInstalacao'] : 'N/A';
+            $orientacao = isset($produto['orientacao']) && $produto['orientacao'] ? $produto['orientacao'] : 'N/A';
+            $precoPorDiaFormatado = number_format($precoPorDia, 2, ',', '.');
+            $valorProdutoFormatado = number_format($valorProduto, 2, ',', '.');
+            
+            $produtosHtml .= <<<HTML
+        <tr>
+            <td colspan="2" style="background-color: #f5f5f5; font-weight: bold; padding: 8px;">
+                {$produto['produto_nome']} - {$produto['produto_marca']}
+            </td>
+        </tr>
+        <tr>
+            <td>Tipo de Instalação:</td>
+            <td>{$tipoInstalacao}</td>
+        </tr>
+        <tr>
+            <td>Orientação:</td>
+            <td>{$orientacao}</td>
+        </tr>
+        <tr>
+            <td>Preço por dia:</td>
+            <td>R$ {$precoPorDiaFormatado}</td>
+        </tr>
+        <tr>
+            <td>Valor deste produto ({$dias} dias):</td>
+            <td><strong>R$ {$valorProdutoFormatado}</strong></td>
+        </tr>
+HTML;
+        }
 
         return <<<HTML
 <!DOCTYPE html>
@@ -153,22 +204,7 @@ class PdfService
     <h2>CLÁUSULA 1 - OBJETO</h2>
     <p>O presente contrato tem por objeto a locação do(s) seguinte(s) item(ns) infantil(is):</p>
     <table>
-        <tr>
-            <td>Produto:</td>
-            <td>{$produto['produto_nome']}</td>
-        </tr>
-        <tr>
-            <td>Marca:</td>
-            <td>{$produto['produto_marca']}</td>
-        </tr>
-        <tr>
-            <td>Tipo de Instalação:</td>
-            <td>{$tipoInstalacao}</td>
-        </tr>
-        <tr>
-            <td>Orientação:</td>
-            <td>{$orientacao}</td>
-        </tr>
+{$produtosHtml}
     </table>
 
     <h2>CLÁUSULA 2 - PRAZO</h2>
@@ -178,16 +214,16 @@ class PdfService
     <p>O LOCATÁRIO pagará ao LOCADOR o valor total de R$ {$valorTotalFormatado} pela locação, via {$formaPagamento}, até o momento da entrega.</p>
     <table>
         <tr>
-            <td>Preço por dia:</td>
-            <td>R$ {$precoPorDiaFormatado}</td>
-        </tr>
-        <tr>
             <td>Total de dias:</td>
             <td>{$dias} dia(s)</td>
         </tr>
         <tr>
-            <td><strong>Valor Total:</strong></td>
+            <td><strong>Valor Total (todos os produtos):</strong></td>
             <td><strong>R$ {$valorTotalFormatado}</strong></td>
+        </tr>
+        <tr>
+            <td><strong>Forma de Pagamento:</strong></td>
+            <td><strong>{$formaPagamento}</strong></td>
         </tr>
     </table>
 

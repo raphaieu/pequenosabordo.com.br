@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Reserva;
 use App\Models\Produto;
+use App\Models\ReservaProduto;
 use App\Services\PdfService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -12,12 +13,14 @@ class ReservaController
 {
     private $reserva;
     private $produto;
+    private $reservaProduto;
     private $pdfService;
 
-    public function __construct(Reserva $reserva, Produto $produto, PdfService $pdfService)
+    public function __construct(Reserva $reserva, Produto $produto, ReservaProduto $reservaProduto, PdfService $pdfService)
     {
         $this->reserva = $reserva;
         $this->produto = $produto;
+        $this->reservaProduto = $reservaProduto;
         $this->pdfService = $pdfService;
     }
 
@@ -32,6 +35,10 @@ class ReservaController
     public function index(Request $request, Response $response): Response
     {
         $reservas = $this->reserva->all();
+        // Busca produtos para cada reserva
+        foreach ($reservas as &$reserva) {
+            $reserva['produtos'] = $this->reservaProduto->findByReserva($reserva['id']);
+        }
         $html = $this->renderView('reservas/index.php', [
             'reservas' => $reservas
         ]);
@@ -64,8 +71,20 @@ class ReservaController
                 throw new \Exception('Data de término deve ser posterior à data de início');
             }
 
+            // Validação de produtos
+            $produtosIds = [];
+            if (isset($data['produtos']) && is_array($data['produtos'])) {
+                $produtosIds = array_filter(array_map('intval', $data['produtos']));
+            } elseif (isset($data['produto_id'])) {
+                // Compatibilidade com formulário antigo
+                $produtosIds = [intval($data['produto_id'])];
+            }
+
+            if (empty($produtosIds)) {
+                throw new \Exception('Selecione pelo menos um produto');
+            }
+
             $reservaData = [
-                'produto_id' => intval($data['produto_id']),
                 'nome_completo' => $data['nome_completo'],
                 'cpf' => $data['cpf'],
                 'endereco' => $data['endereco'],
@@ -74,7 +93,12 @@ class ReservaController
                 'forma_pagamento' => $data['forma_pagamento'] ?? 'PIX',
             ];
 
-            $this->reserva->create($reservaData);
+            $reservaId = $this->reserva->create($reservaData);
+
+            // Adiciona produtos à reserva
+            foreach ($produtosIds as $produtoId) {
+                $this->reservaProduto->create($reservaId, $produtoId);
+            }
 
             return $response
                 ->withStatus(302)
@@ -103,6 +127,9 @@ class ReservaController
                 ->withStatus(302)
                 ->withHeader('Location', '/admin/reservas?error=Reserva não encontrada');
         }
+
+        // Busca produtos da reserva
+        $reserva['produtos_selecionados'] = $this->reservaProduto->findByReserva($args['id']);
 
         $html = $this->renderView('reservas/form.php', [
             'reserva' => $reserva,
@@ -133,8 +160,20 @@ class ReservaController
                 throw new \Exception('Data de término deve ser posterior à data de início');
             }
 
+            // Validação de produtos
+            $produtosIds = [];
+            if (isset($data['produtos']) && is_array($data['produtos'])) {
+                $produtosIds = array_filter(array_map('intval', $data['produtos']));
+            } elseif (isset($data['produto_id'])) {
+                // Compatibilidade com formulário antigo
+                $produtosIds = [intval($data['produto_id'])];
+            }
+
+            if (empty($produtosIds)) {
+                throw new \Exception('Selecione pelo menos um produto');
+            }
+
             $reservaData = [
-                'produto_id' => intval($data['produto_id']),
                 'nome_completo' => $data['nome_completo'],
                 'cpf' => $data['cpf'],
                 'endereco' => $data['endereco'],
@@ -145,11 +184,18 @@ class ReservaController
 
             $this->reserva->update($args['id'], $reservaData);
 
+            // Remove produtos antigos e adiciona novos
+            $this->reservaProduto->deleteByReserva($args['id']);
+            foreach ($produtosIds as $produtoId) {
+                $this->reservaProduto->create($args['id'], $produtoId);
+            }
+
             return $response
                 ->withStatus(302)
                 ->withHeader('Location', '/admin/reservas?success=Reserva atualizada com sucesso');
         } catch (\Exception $e) {
             $produtos = $this->produto->all();
+            $reserva['produtos_selecionados'] = $this->reservaProduto->findByReserva($args['id']);
             $html = $this->renderView('reservas/form.php', [
                 'reserva' => $reserva,
                 'produtos' => $produtos,
@@ -187,17 +233,16 @@ class ReservaController
                 ->withHeader('Location', '/admin/reservas?error=Reserva não encontrada');
         }
 
-        $produto = [
-            'produto_nome' => $reserva['produto_nome'],
-            'produto_marca' => $reserva['produto_marca'],
-            'tipoInstalacao' => $reserva['tipoInstalacao'] ?? null,
-            'orientacao' => $reserva['orientacao'] ?? null,
-            'preco1' => $reserva['preco1'] ?? $reserva['precoCurto'] ?? 0,
-            'preco2' => $reserva['preco2'] ?? $reserva['precoLongo'] ?? 0,
-            'preco3' => $reserva['preco3'] ?? $reserva['precoLongo'] ?? 0,
-        ];
+        // Busca todos os produtos da reserva
+        $produtos = $this->reservaProduto->findByReserva($args['id']);
 
-        $pdfContent = $this->pdfService->generateContract($reserva, $produto);
+        if (empty($produtos)) {
+            return $response
+                ->withStatus(302)
+                ->withHeader('Location', '/admin/reservas?error=Reserva sem produtos');
+        }
+
+        $pdfContent = $this->pdfService->generateContract($reserva, $produtos);
 
         $response->getBody()->write($pdfContent);
         

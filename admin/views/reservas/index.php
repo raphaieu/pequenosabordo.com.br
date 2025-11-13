@@ -17,7 +17,17 @@ ob_start();
         <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="font-semibold text-lg mb-2"><?= htmlspecialchars($reserva['nome_completo']) ?></h3>
             <p class="text-sm text-gray-600 mb-1">CPF: <?= htmlspecialchars($reserva['cpf']) ?></p>
-            <p class="text-sm text-gray-600 mb-1">Produto: <?= htmlspecialchars($reserva['produto_nome']) ?></p>
+            <p class="text-sm text-gray-600 mb-1">
+                Produto(s): 
+                <?php 
+                if (isset($reserva['produtos']) && is_array($reserva['produtos']) && count($reserva['produtos']) > 0) {
+                    $nomes = array_map(function($p) { return htmlspecialchars($p['produto_nome']); }, $reserva['produtos']);
+                    echo implode(', ', $nomes);
+                } else {
+                    echo 'N/A';
+                }
+                ?>
+            </p>
             <p class="text-sm text-gray-600 mb-1">Período: <?= date('d/m/Y', strtotime($reserva['data_inicio'])) ?> - <?= date('d/m/Y', strtotime($reserva['data_fim'])) ?></p>
             <p class="text-sm text-gray-600 mb-1">Pagamento: <?= htmlspecialchars($reserva['forma_pagamento'] ?? 'PIX') ?></p>
             <div class="flex gap-2 mt-4">
@@ -59,8 +69,17 @@ ob_start();
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500"><?= htmlspecialchars($reserva['cpf']) ?></div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900"><?= htmlspecialchars($reserva['produto_nome']) ?></div>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">
+                            <?php 
+                            if (isset($reserva['produtos']) && is_array($reserva['produtos']) && count($reserva['produtos']) > 0) {
+                                $nomes = array_map(function($p) { return htmlspecialchars($p['produto_nome']); }, $reserva['produtos']);
+                                echo implode('<br>', $nomes);
+                            } else {
+                                echo 'N/A';
+                            }
+                            ?>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500">
