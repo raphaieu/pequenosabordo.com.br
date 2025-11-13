@@ -45,7 +45,7 @@ ob_start();
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8"></th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imagem</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 300px;">Nome</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 1 (0-5)</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 2 (6-15)</th>
@@ -64,8 +64,8 @@ ob_start();
                     <td class="px-6 py-4 whitespace-nowrap">
                         <img src="<?= htmlspecialchars(imageUrl($produto['imagem'])) ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="h-16 w-16 object-cover rounded">
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($produto['nome']) ?></div>
+                    <td class="px-6 py-4" style="max-width: 300px;">
+                        <div class="text-sm font-medium text-gray-900 break-words"><?= htmlspecialchars($produto['nome']) ?></div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500"><?= htmlspecialchars($produto['marca']) ?></div>
