@@ -18,7 +18,7 @@
               </h2>
               <p class="btn btn-arrow btn-primary inline-block text-base md:text-lg" style="text-transform: none">
                 <span>
-                  Faça sua reserva de forma simples e rápida. Escolha as datas, o produto desejado e entre em contato para confirmar a disponibilidade.
+                  Faça sua reserva de forma simples e rápida. Escolha as datas, o produto desejado independente da quantidade de dias e entre em contato para confirmar a disponibilidade.
                   <svg class="inline-block ml-2" width="18" height="18">
                     <use xlink:href="#arrow-right"></use>
                   </svg>
