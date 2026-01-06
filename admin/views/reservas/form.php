@@ -50,12 +50,11 @@ if (isset($reserva['produtos_selecionados']) && is_array($reserva['produtos_sele
             </div>
 
             <div>
-                <label for="cpf" class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
+                <label for="cpf" class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
                 <input 
                     type="text" 
                     id="cpf" 
                     name="cpf" 
-                    required 
                     value="<?= htmlspecialchars($reserva['cpf'] ?? $data['cpf'] ?? '') ?>"
                     placeholder="000.000.000-00"
                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
@@ -63,12 +62,11 @@ if (isset($reserva['produtos_selecionados']) && is_array($reserva['produtos_sele
             </div>
 
             <div>
-                <label for="endereco" class="block text-sm font-medium text-gray-700 mb-1">Endereço *</label>
+                <label for="endereco" class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
                 <textarea 
                     id="endereco" 
                     name="endereco" 
                     rows="3" 
-                    required 
                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                 ><?= htmlspecialchars($reserva['endereco'] ?? $data['endereco'] ?? '') ?></textarea>
             </div>

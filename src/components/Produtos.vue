@@ -1,7 +1,7 @@
 <template>
   <section id="produtos" class="padding-small">
     <div class="container-fluid padding-side" data-aos="fade-up">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-12">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
         <div class="lg:w-1/3">
           <h3 class="text-3xl md:text-4xl lg:text-5xl font-heading font-normal mb-4">Nossos Produtos</h3>
         </div>
@@ -11,85 +11,117 @@
           </p>
         </div>
       </div>
+
+      <!-- Campo de busca -->
+      <div class="mb-8">
+        <input
+          type="text"
+          v-model="termoBusca"
+          placeholder="Buscar produtos (ex: cadeira, berço, carrinho)..."
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+        />
+        <p v-if="termoBusca && produtosFiltrados.length > 0" class="mt-2 text-sm text-gray-600">
+          {{ produtosFiltrados.length }} produto(s) encontrado(s)
+        </p>
+        <p v-if="termoBusca && produtosFiltrados.length === 0" class="mt-2 text-sm text-gray-600">
+          Nenhum produto encontrado
+        </p>
+      </div>
+
+      <!-- Loading -->
       <div v-if="loading" class="text-center py-12">
         <p class="text-gray-500">Carregando produtos...</p>
       </div>
-      <div v-else class="swiper room-swiper mt-5">
-        <div class="swiper-wrapper">
-          <div
-            v-for="produto in produtos"
-            :key="produto.id"
-            class="swiper-slide"
-          >
-            <div class="room-item">
-              <div class="image-container">
-                <img
-                  :src="produto.imagem"
-                  :alt="produto.nome"
-                  class="post-image w-full h-full object-cover"
-                />
-              </div>
-              <div class="product-description">
-                <h4 class="text-xl md:text-2xl font-heading font-normal text-white mb-3">{{ produto.nome }}</h4>
-                <div class="space-y-2 mb-4">
-                  <p class="text-white text-sm">
-                    <span class="font-semibold">•Marca:</span> {{ produto.marca }}
-                  </p>
-                  <p v-if="produto.tipoInstalacao" class="text-white text-sm">
-                    <span class="font-semibold">•Tipo de instalação:</span> {{ produto.tipoInstalacao }}
-                  </p>
-                  <p v-if="produto.orientacao" class="text-white text-sm">
-                    <span class="font-semibold">•Orientação:</span> {{ produto.orientacao }}
-                  </p>
-                </div>
-                <a href="javascript:void(0);" @click="reservar(produto.id)" class="inline-block">
-                  <p class="underline text-white hover:text-primary transition-colors">Reservar</p>
-                </a>
-              </div>
-            </div>
-            <div class="room-content mt-4">
-              <h4 class="text-xl md:text-2xl font-heading font-normal text-center mb-3 min-h-[3.5rem] md:min-h-[4rem] flex items-center justify-center">
-                <a href="javascript:void(0);" @click="reservar(produto.id)" class="hover:text-primary transition-colors">
-                  {{ produto.nome }}
-                </a>
-              </h4>
-              <p class="text-center mb-2">
-                0 a 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}</span> / dia
+
+      <!-- Grid de produtos -->
+      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div
+          v-for="produto in produtosFiltrados"
+          :key="produto.id"
+          class="card-produto bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col cursor-pointer"
+          @click="abrirModal(produto)"
+        >
+          <!-- Imagem -->
+          <div class="image-wrapper w-full aspect-square overflow-hidden bg-gray-100">
+            <img
+              :src="produto.imagem"
+              :alt="produto.nome"
+              class="w-full h-full object-cover"
+            />
+          </div>
+
+          <!-- Conteúdo do card -->
+          <div class="p-3 md:p-4 flex flex-col flex-grow">
+            <!-- Marca -->
+            <p class="text-xs md:text-sm text-gray-600 mb-1 font-medium">
+              {{ produto.marca }}
+            </p>
+
+            <!-- Nome do produto -->
+            <h4 class="text-sm md:text-base font-heading font-normal mb-2 line-clamp-2 min-h-[2.5rem]">
+              {{ produto.nome }}
+            </h4>
+
+            <!-- Tipo de instalação -->
+            <p v-if="produto.tipoInstalacao" class="text-xs text-gray-500 mb-3">
+              {{ produto.tipoInstalacao }}
+            </p>
+
+            <!-- Preços -->
+            <div class="mt-auto space-y-1">
+              <p class="text-xs md:text-sm text-gray-700">
+                0-5 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}/dia</span>
               </p>
-              <p class="text-center mb-2">
-                6 a 15 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco2 || produto.precoLongo) }}</span> / dia
+              <p class="text-xs md:text-sm text-gray-700">
+                6-15 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco2 || produto.precoLongo) }}/dia</span>
               </p>
-              <p class="text-center mb-4">
-                16 a 30 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco3 || produto.precoLongo) }}</span> / dia
-              </p>
-              <p class="text-gray-500 text-xs md:text-sm leading-relaxed">
-                {{ produto.descricao }}
+              <p class="text-xs md:text-sm text-gray-700">
+                16-30 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco3 || produto.precoLongo) }}/dia</span>
               </p>
             </div>
           </div>
         </div>
-        <div class="swiper-pagination room-pagination relative mt-5"></div>
       </div>
     </div>
+
+    <!-- Modal de detalhes do produto -->
+    <ModalProduto
+      :show="showModal"
+      :produto="produtoSelecionado"
+      @close="fecharModal"
+      @reservar="handleReservar"
+    />
   </section>
 </template>
 
 <script>
-import { onMounted, ref } from 'vue'
-import { Swiper } from 'swiper'
-import { Navigation, Pagination } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
+import { onMounted, ref, computed } from 'vue'
 import { produtos as produtosEstaticos } from '../data/produtos.js'
 import { api } from '../services/api.js'
+import ModalProduto from './ModalProduto.vue'
 
 export default {
   name: 'Produtos',
+  components: {
+    ModalProduto,
+  },
   setup() {
-    const swiperInstance = ref(null)
     const produtos = ref([])
     const loading = ref(true)
+    const termoBusca = ref('')
+    const showModal = ref(false)
+    const produtoSelecionado = ref(null)
+
+    // Computed property para produtos filtrados
+    const produtosFiltrados = computed(() => {
+      if (!termoBusca.value.trim()) {
+        return produtos.value
+      }
+      const termo = termoBusca.value.toLowerCase().trim()
+      return produtos.value.filter(produto =>
+        produto.nome.toLowerCase().includes(termo)
+      )
+    })
 
     onMounted(async () => {
       // Busca produtos da API
@@ -108,31 +140,21 @@ export default {
       } finally {
         loading.value = false
       }
-
-      // Inicializa Swiper após carregar produtos
-      setTimeout(() => {
-        swiperInstance.value = new Swiper('.room-swiper', {
-          modules: [Navigation, Pagination],
-          slidesPerView: 3,
-          spaceBetween: 20,
-          pagination: {
-            el: '.room-pagination',
-            clickable: true,
-          },
-          breakpoints: {
-            0: {
-              slidesPerView: 1,
-            },
-            1024: {
-              slidesPerView: 2,
-            },
-            1280: {
-              slidesPerView: 3,
-            },
-          },
-        })
-      }, 100)
     })
+
+    const abrirModal = (produto) => {
+      produtoSelecionado.value = produto
+      showModal.value = true
+    }
+
+    const fecharModal = () => {
+      showModal.value = false
+      produtoSelecionado.value = null
+    }
+
+    const handleReservar = (produtoId) => {
+      reservar(produtoId)
+    }
 
     const reservar = (produtoId) => {
       if (typeof window !== 'undefined' && window.reserva) {
@@ -149,6 +171,13 @@ export default {
     return {
       produtos,
       loading,
+      termoBusca,
+      produtosFiltrados,
+      showModal,
+      produtoSelecionado,
+      abrirModal,
+      fecharModal,
+      handleReservar,
       reservar,
       formatarPreco,
     }
@@ -157,42 +186,28 @@ export default {
 </script>
 
 <style scoped>
-.room-item {
-  @apply relative overflow-hidden rounded-2xl bg-black;
+.card-produto {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
 }
 
-.image-container {
+.card-produto:hover {
+  transform: translateY(-4px);
+}
+
+.card-produto:active {
+  transform: translateY(-2px);
+}
+
+.image-wrapper {
   position: relative;
-  width: 100%;
-  height: 300px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  display: block;
-}
-
-.room-item img.post-image {
-  @apply w-full h-full object-cover transition-all duration-500;
-  transform: scale(1);
-}
-
-.room-item:hover img.post-image {
-  @apply opacity-50;
-  transform: scale(1.1);
-}
-
-.product-description {
-  @apply opacity-0 absolute left-0 right-0 p-5 text-white transition-all duration-500;
-  bottom: -125px;
-}
-
-.room-item:hover .product-description {
-  @apply opacity-100;
-  bottom: 20px;
-}
-
-@media only screen and (min-width: 770px) and (max-width: 1400px) {
-  .product-description {
-    bottom: -180px;
-  }
 }
 </style>
 

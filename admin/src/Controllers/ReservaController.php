@@ -34,13 +34,30 @@ class ReservaController
 
     public function index(Request $request, Response $response): Response
     {
-        $reservas = $this->reserva->all();
-        // Busca produtos para cada reserva
+        $queryParams = $request->getQueryParams();
+        $page = isset($queryParams['page']) ? max(1, (int)$queryParams['page']) : 1;
+        $perPage = 20;
+        
+        $totalReservas = $this->reserva->count();
+        $totalPages = ceil($totalReservas / $perPage);
+        
+        $reservas = $this->reserva->paginate($page, $perPage);
+        
+        // Busca produtos para cada reserva e verifica se já foi devolvida
+        $hoje = new \DateTime();
         foreach ($reservas as &$reserva) {
             $reserva['produtos'] = $this->reservaProduto->findByReserva($reserva['id']);
+            
+            // Verifica se a data final já passou
+            $dataFim = new \DateTime($reserva['data_fim']);
+            $reserva['devolvida'] = $dataFim < $hoje;
         }
+        
         $html = $this->renderView('reservas/index.php', [
-            'reservas' => $reservas
+            'reservas' => $reservas,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalReservas' => $totalReservas
         ]);
         $response->getBody()->write($html);
         return $response;

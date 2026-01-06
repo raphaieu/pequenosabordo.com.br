@@ -15,9 +15,27 @@ class Reserva
 
     public function all()
     {
-        $sql = "SELECT r.* FROM reservas r ORDER BY r.criado_em DESC";
+        $sql = "SELECT r.* FROM reservas r ORDER BY r.data_fim DESC, r.criado_em DESC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
+    }
+
+    public function paginate($page = 1, $perPage = 20)
+    {
+        $offset = ($page - 1) * $perPage;
+        $sql = "SELECT r.* FROM reservas r ORDER BY r.data_fim DESC, r.criado_em DESC LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function count()
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM reservas");
+        $result = $stmt->fetch();
+        return (int)$result['total'];
     }
 
     public function find($id)
