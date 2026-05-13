@@ -26,14 +26,15 @@ class ReservaProduto
         return $stmt->fetchAll();
     }
 
-    public function create($reservaId, $produtoId)
+    public function create($reservaId, $produtoId, $valorCobrado = 0.00)
     {
-        $sql = "INSERT INTO reserva_produtos (reserva_id, produto_id) 
-                VALUES (:reserva_id, :produto_id)";
+        $sql = "INSERT INTO reserva_produtos (reserva_id, produto_id, valor_cobrado) 
+                VALUES (:reserva_id, :produto_id, :valor_cobrado)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             ':reserva_id' => $reservaId,
             ':produto_id' => $produtoId,
+            ':valor_cobrado' => $valorCobrado,
         ]);
     }
 

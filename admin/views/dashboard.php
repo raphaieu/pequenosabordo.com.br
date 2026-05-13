@@ -22,12 +22,15 @@ ob_start();
 
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-heading font-semibold mb-4">Ações Rápidas</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <a href="/admin/produtos/create" class="bg-primary text-white py-3 px-6 rounded-md hover:bg-opacity-90 transition-colors text-center font-medium">
                 Novo Produto
             </a>
             <a href="/admin/reservas/create" class="bg-primary text-white py-3 px-6 rounded-md hover:bg-opacity-90 transition-colors text-center font-medium">
                 Nova Reserva
+            </a>
+            <a href="/admin/logistica" class="bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-opacity-90 transition-colors text-center font-medium">
+                Ver Logística
             </a>
         </div>
     </div>

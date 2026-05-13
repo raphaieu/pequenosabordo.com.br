@@ -24,13 +24,22 @@ CREATE TABLE IF NOT EXISTS produtos (
 CREATE TABLE IF NOT EXISTS reservas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_completo VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20) NULL,
     cpf VARCHAR(14) NOT NULL,
     endereco TEXT NOT NULL,
+    local_entrega VARCHAR(255) NULL,
+    horario_entrega TIME NULL,
+    local_devolucao VARCHAR(255) NULL,
+    horario_devolucao TIME NULL,
+    obs_logistica TEXT NULL,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
     forma_pagamento VARCHAR(50) NOT NULL DEFAULT 'PIX' COMMENT 'Forma de pagamento: PIX, Cartão de Crédito (máquininha), Espécie, Link de Pagamento',
+    status ENUM('pendente', 'entregue', 'concluido', 'cancelado') NOT NULL DEFAULT 'pendente',
+    arquivado TINYINT(1) NOT NULL DEFAULT 0,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabela de relacionamento reserva_produtos (muitos-para-muitos)
@@ -38,6 +47,7 @@ CREATE TABLE IF NOT EXISTS reserva_produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reserva_id INT NOT NULL,
     produto_id INT NOT NULL,
+    valor_cobrado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (reserva_id) REFERENCES reservas(id) ON DELETE CASCADE,
     FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE RESTRICT,

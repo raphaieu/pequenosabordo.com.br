@@ -16,40 +16,28 @@ class PdfService
 
         $dompdf = new Dompdf($options);
 
-        // Garante que produtos seja um array
         if (!is_array($produtos)) {
             $produtos = [$produtos];
         }
 
-        // Calcula dias
+        // Calcula dias (incluindo o dia inicial)
         $dataInicio = new \DateTime($reserva['data_inicio']);
         $dataFim = new \DateTime($reserva['data_fim']);
-        $dias = $dataInicio->diff($dataFim)->days;
+        $dias = $dataInicio->diff($dataFim)->days + 1;
         
-        // Calcula valores para cada produto
         $produtosCalculados = [];
         $valorTotal = 0;
         
         foreach ($produtos as $produto) {
-            // Determina preço baseado no número de dias
-            // 0 a 5 dias: preco1
-            // 6 a 15 dias: preco2
-            // 16 a 30 dias: preco3
-            if ($dias <= 5) {
-                $precoPorDia = $produto['preco1'] ?? $produto['precoCurto'] ?? 0;
-            } elseif ($dias <= 15) {
-                $precoPorDia = $produto['preco2'] ?? $produto['precoLongo'] ?? 0;
-            } else {
-                $precoPorDia = $produto['preco3'] ?? $produto['precoLongo'] ?? 0;
-            }
-            
-            $valorProduto = $dias * $precoPorDia;
+            // Usa o valor cobrado salvo na reserva como Preço por Dia
+            $precoPorDia = $produto['valor_cobrado'] ?? 0;
+            $valorProduto = $precoPorDia * $dias;
             $valorTotal += $valorProduto;
             
             $produtosCalculados[] = [
                 'produto' => $produto,
-                'precoPorDia' => $precoPorDia,
-                'valorTotal' => $valorProduto,
+                'precoFinal' => $valorProduto,
+                'precoPorDia' => $precoPorDia
             ];
         }
 
@@ -76,7 +64,7 @@ class PdfService
         foreach ($produtosCalculados as $item) {
             $produto = $item['produto'];
             $precoPorDia = $item['precoPorDia'];
-            $valorProduto = $item['valorTotal'];
+            $valorProduto = $item['precoFinal'];
             $tipoInstalacao = isset($produto['tipoInstalacao']) && $produto['tipoInstalacao'] ? $produto['tipoInstalacao'] : 'N/A';
             $orientacao = isset($produto['orientacao']) && $produto['orientacao'] ? $produto['orientacao'] : 'N/A';
             $precoPorDiaFormatado = number_format($precoPorDia, 2, ',', '.');
@@ -264,4 +252,3 @@ HTML;
 HTML;
     }
 }
-

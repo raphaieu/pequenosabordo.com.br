@@ -213,10 +213,14 @@ $app->post('/produtos/update-order', [$produtoController, 'updateOrder'])->add($
 
 // Rotas protegidas - Reservas
 $app->get('/reservas', [$reservaController, 'index'])->add($authMiddleware);
+$app->get('/logistica', [$reservaController, 'logistica'])->add($authMiddleware);
 $app->get('/reservas/create', [$reservaController, 'create'])->add($authMiddleware);
 $app->post('/reservas/store', [$reservaController, 'store'])->add($authMiddleware);
 $app->get('/reservas/{id}/edit', [$reservaController, 'edit'])->add($authMiddleware);
 $app->post('/reservas/{id}/update', [$reservaController, 'update'])->add($authMiddleware);
+$app->post('/reservas/{id}/update-status', [$reservaController, 'updateStatus'])->add($authMiddleware);
+$app->post('/reservas/{id}/archive', [$reservaController, 'archive'])->add($authMiddleware);
+$app->post('/reservas/{id}/unarchive', [$reservaController, 'unarchive'])->add($authMiddleware);
 $app->post('/reservas/{id}/delete', [$reservaController, 'delete'])->add($authMiddleware);
 $app->get('/reservas/{id}/pdf', [$reservaController, 'generatePdf'])->add($authMiddleware);
 
