@@ -108,6 +108,8 @@ docker run --rm -v pequenosabordo_uploads_produtos:/data -v $(pwd):/backup alpin
 | Problema | Solução |
 |----------|---------|
 | Erro de conexão com banco | Verifique `DB_PASS` e `MYSQL_ROOT_PASSWORD` no Coolify; aguarde o healthcheck do `db` |
+| Banco incompleto / dados antigos | O init só roda com volume MySQL **vazio**. No Coolify: **Persistent Storage** → apague o volume `mysql_data` → redeploy |
+| `/admin` baixa arquivo PHP | Corrigido no nginx (não servir `index.php` como estático). Faça push e redeploy |
 | Imagens não aparecem | Confirme que o volume `uploads_produtos` está montado; reinicie o `app` |
 | Admin retorna 502 | Verifique logs: `docker compose logs app` |
 | `port is already allocated` (8080) | Remova `ports` do compose principal; no Coolify não é necessário bind de porta |
