@@ -35,6 +35,7 @@ O projeto inclui `Dockerfile` e `docker-compose.yaml` para deploy automatizado v
 
 ```bash
 cp .env.example .env
+cp docker-compose.override.example.yml docker-compose.override.yml
 # Edite .env com senhas seguras
 
 docker compose up --build -d
@@ -44,6 +45,8 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/          # 200
 curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/admin/login  # 200
 curl -s http://localhost:8080/admin/api/produtos | head -c 100           # JSON
 ```
+
+> **Coolify:** o `docker-compose.yaml` não expõe porta no host (evita conflito com 8080). O Traefik do Coolify roteia o domínio para o container na porta 80 interna.
 
 ### 3. Migrar dados da VPS antiga (aaPanel)
 
@@ -107,6 +110,7 @@ docker run --rm -v pequenosabordo_uploads_produtos:/data -v $(pwd):/backup alpin
 | Erro de conexão com banco | Verifique `DB_PASS` e `MYSQL_ROOT_PASSWORD` no Coolify; aguarde o healthcheck do `db` |
 | Imagens não aparecem | Confirme que o volume `uploads_produtos` está montado; reinicie o `app` |
 | Admin retorna 502 | Verifique logs: `docker compose logs app` |
+| `port is already allocated` (8080) | Remova `ports` do compose principal; no Coolify não é necessário bind de porta |
 | Init SQL não rodou | Scripts em `db/init/` só executam com volume MySQL vazio; use import manual (Opção B) |
 
 ---

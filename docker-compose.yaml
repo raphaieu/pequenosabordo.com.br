@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "${APP_PORT:-8080}:80"
+    expose:
+      - "80"
     environment:
       DB_HOST: db
       DB_NAME: ${DB_NAME:-pequenos_a_bordo}

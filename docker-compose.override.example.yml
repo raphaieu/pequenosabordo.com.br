@@ -1,0 +1,9 @@
+# Copie para docker-compose.override.yml para testes locais:
+#   cp docker-compose.override.example.yml docker-compose.override.yml
+#
+# O Coolify não precisa deste arquivo — o Traefik roteia sem bind de porta no host.
+
+services:
+  app:
+    ports:
+      - "${APP_PORT:-8080}:80"
