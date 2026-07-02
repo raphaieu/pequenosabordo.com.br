@@ -1,8 +1,7 @@
 <?php
 
-// Credenciais hardcoded
 return [
-    'username' => 'priscila',
-    'password' => 'p1m3nt4', // Em produção, altere para uma senha forte
+    'username' => $_ENV['ADMIN_USER'] ?? getenv('ADMIN_USER') ?: 'priscila',
+    'password' => $_ENV['ADMIN_PASS'] ?? getenv('ADMIN_PASS') ?: 'p1m3nt4',
 ];
 

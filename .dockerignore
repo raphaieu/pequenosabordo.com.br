@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+admin/vendor/
+
+# Build output (gerado no Dockerfile)
+dist/
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs (não necessários na imagem)
+*.md
+!admin/README.md
+
+# Plan files
+.cursor/

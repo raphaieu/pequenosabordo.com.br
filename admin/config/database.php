@@ -2,10 +2,10 @@
 
 return [
     'driver' => 'mysql',
-    'host' => $_ENV['DB_HOST'] ?? 'localhost',
-    'database' => $_ENV['DB_NAME'] ?? 'pequenos_a_bordo',
-    'username' => $_ENV['DB_USER'] ?? 'pequenos_a_bordo',
-    'password' => $_ENV['DB_PASS'] ?? 'zWBERXeS3WKsKaBW',
+    'host' => $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'db',
+    'database' => $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'pequenos_a_bordo',
+    'username' => $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'pequenos_a_bordo',
+    'password' => $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: '',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
     'options' => [

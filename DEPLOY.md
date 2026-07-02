@@ -1,6 +1,118 @@
 # Guia de Deploy - Pequenos a Bordo
 
-## 📋 Checklist de Deploy
+## Deploy via Coolify (Docker) — Recomendado
+
+O projeto inclui `Dockerfile` e `docker-compose.yaml` para deploy automatizado via Git no Coolify (Oracle VPS).
+
+### Arquitetura
+
+- **app**: nginx + PHP 8.3-FPM (front-end Vue compilado + admin Slim)
+- **db**: MySQL 8 com volume persistente
+- **uploads_produtos**: volume para imagens enviadas pelo admin
+- SSL e domínio são gerenciados pelo Traefik do Coolify
+
+### 1. Configurar no Coolify
+
+1. Crie um recurso do tipo **Docker Compose**
+2. Conecte o repositório Git e selecione a branch de produção
+3. Defina o caminho do compose: `docker-compose.yaml` (raiz do projeto)
+4. Configure as variáveis de ambiente (veja `.env.example`):
+
+| Variável | Descrição |
+|----------|-----------|
+| `DB_NAME` | Nome do banco (padrão: `pequenos_a_bordo`) |
+| `DB_USER` | Usuário do banco |
+| `DB_PASS` | Senha do banco |
+| `MYSQL_ROOT_PASSWORD` | Senha root do MySQL |
+| `ADMIN_USER` | Usuário do painel admin |
+| `ADMIN_PASS` | Senha do painel admin |
+
+5. No serviço **app**, configure o domínio (`pequenosabordo.com.br`) na porta **80**
+6. Confirme que os volumes `uploads_produtos` e `mysql_data` estão como **Persistent Storage**
+7. Habilite **Auto Deploy** no push para a branch de produção
+
+### 2. Testar localmente antes do deploy
+
+```bash
+cp .env.example .env
+# Edite .env com senhas seguras
+
+docker compose up --build -d
+
+# Verificar
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/          # 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/admin/login  # 200
+curl -s http://localhost:8080/admin/api/produtos | head -c 100           # JSON
+```
+
+### 3. Migrar dados da VPS antiga (aaPanel)
+
+#### Banco de dados
+
+O repositório já inclui o dump de produção em `db/init/01-dump.sql` (com `USE pequenos_a_bordo;` no início). Esse script roda automaticamente na **primeira** subida do MySQL, quando o volume `mysql_data` está vazio.
+
+Para atualizar os dados no futuro, gere um novo dump na VPS antiga:
+
+```bash
+mysqldump -u root -p pequenos_a_bordo > dump.sql
+```
+
+**Opção A — Antes do primeiro deploy:** substitua o conteúdo de `db/init/01-dump.sql` (mantendo `USE pequenos_a_bordo;` na primeira linha) e faça commit.
+
+**Opção B — Volume MySQL já existente** (import manual):
+
+```bash
+docker compose exec -T db mysql -u root -p"$MYSQL_ROOT_PASSWORD" pequenos_a_bordo < dump.sql
+```
+
+#### Imagens de produtos
+
+Coloque os arquivos em `public/images/produtos/` no repositório. No build da imagem, elas entram como seed e populam o volume `uploads_produtos` na subida do container (sem sobrescrever uploads novos feitos pelo admin).
+
+O repositório já contém as 44 imagens de produção. Para copiar de outra VPS:
+
+```bash
+# Na VPS antiga
+tar -czf uploads_produtos.tar.gz -C /caminho/public/images/produtos .
+
+# Extraia em public/images/produtos/ antes do deploy, ou copie direto no volume via Coolify
+```
+
+### 4. Verificar deploy
+
+1. `https://pequenosabordo.com.br` — front-end Vue
+2. `https://pequenosabordo.com.br/admin/login` — painel admin
+3. `https://pequenosabordo.com.br/admin/api/produtos` — API JSON
+4. Teste login, CRUD de produtos e upload de imagem
+
+### 5. Atualizações (auto-deploy)
+
+Com Auto Deploy habilitado, cada `git push` na branch configurada dispara rebuild e redeploy automático no Coolify. O volume de uploads e o banco são preservados entre deploys.
+
+### 6. Backup
+
+```bash
+# Backup do banco
+docker compose exec db mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" pequenos_a_bordo > backup_$(date +%Y%m%d).sql
+
+# Backup das imagens de produtos
+docker run --rm -v pequenosabordo_uploads_produtos:/data -v $(pwd):/backup alpine \
+  tar -czf /backup/uploads_$(date +%Y%m%d).tar.gz -C /data .
+```
+
+### Troubleshooting (Docker)
+
+| Problema | Solução |
+|----------|---------|
+| Erro de conexão com banco | Verifique `DB_PASS` e `MYSQL_ROOT_PASSWORD` no Coolify; aguarde o healthcheck do `db` |
+| Imagens não aparecem | Confirme que o volume `uploads_produtos` está montado; reinicie o `app` |
+| Admin retorna 502 | Verifique logs: `docker compose logs app` |
+| Init SQL não rodou | Scripts em `db/init/` só executam com volume MySQL vazio; use import manual (Opção B) |
+
+---
+
+## Deploy legado (aaPanel) — Referência
+
 
 ### 1. Preparação no Servidor (aaPanel)
 

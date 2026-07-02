@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-pequenos_a_bordo}
+      DB_USER: ${DB_USER:-pequenos_a_bordo}
+      DB_PASS: ${DB_PASS:?Defina DB_PASS no .env}
+      ADMIN_USER: ${ADMIN_USER:-priscila}
+      ADMIN_PASS: ${ADMIN_PASS:?Defina ADMIN_PASS no .env}
+    volumes:
+      - uploads_produtos:/var/www/html/public/images/produtos
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD no .env}
+      MYSQL_DATABASE: ${DB_NAME:-pequenos_a_bordo}
+      MYSQL_USER: ${DB_USER:-pequenos_a_bordo}
+      MYSQL_PASSWORD: ${DB_PASS:?Defina DB_PASS no .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  uploads_produtos:
+  mysql_data:
