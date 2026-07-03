@@ -20,7 +20,9 @@ services:
     restart: unless-stopped
 
   db:
-    image: mysql:8
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD no .env}
       MYSQL_DATABASE: ${DB_NAME:-pequenos_a_bordo}
@@ -28,7 +30,6 @@ services:
       MYSQL_PASSWORD: ${DB_PASS:?Defina DB_PASS no .env}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
