@@ -237,7 +237,7 @@ if (isset($reserva['produtos_selecionados']) && is_array($reserva['produtos_sele
 
                 if (diffDays <= 5) {
                     tierAtual = 1;
-                    labelTier.innerText = '2 a 5 dias';
+                    labelTier.innerText = '3 a 5 dias';
                 } else if (diffDays <= 15) {
                     tierAtual = 2;
                     labelTier.innerText = '6 a 15 dias';

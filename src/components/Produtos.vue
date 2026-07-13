@@ -70,7 +70,7 @@
             <!-- Preços -->
             <div class="mt-auto space-y-1">
               <p class="text-xs md:text-sm text-gray-700">
-                2-5 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}/dia</span>
+                3-5 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}/dia</span>
               </p>
               <p class="text-xs md:text-sm text-gray-700">
                 6-15 dias: <span class="text-primary font-semibold">R$ {{ formatarPreco(produto.preco2 || produto.precoLongo) }}/dia</span>

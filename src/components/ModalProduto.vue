@@ -55,7 +55,7 @@
               <!-- Preços -->
               <div class="precos mb-6 p-4 bg-gray-50 rounded-lg">
                 <p class="text-base mb-2">
-                  2 a 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}</span> / dia
+                  3 a 5 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco1 || produto.precoCurto) }}</span> / dia
                 </p>
                 <p class="text-base mb-2">
                   6 a 15 dias: <span class="text-primary text-xl font-semibold">R$ {{ formatarPreco(produto.preco2 || produto.precoLongo) }}</span> / dia

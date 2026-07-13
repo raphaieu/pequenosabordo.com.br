@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS produtos (
     marca VARCHAR(100) NOT NULL,
     tipoInstalacao VARCHAR(255) NULL,
     orientacao VARCHAR(255) NULL,
-    preco1 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 0 a 5 dias',
+    preco1 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 3 a 5 dias',
     preco2 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 6 a 15 dias',
     preco3 DECIMAL(10,2) NOT NULL COMMENT 'Preço para 16 a 30 dias',
     descricao TEXT NOT NULL,

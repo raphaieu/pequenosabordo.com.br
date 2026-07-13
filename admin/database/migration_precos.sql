@@ -1,6 +1,6 @@
 -- Migração: Atualizar estrutura de preços
 -- De: precoCurto, precoLongo
--- Para: preco1 (0-5 dias), preco2 (6-15 dias), preco3 (16-30 dias)
+-- Para: preco1 (3-5 dias), preco2 (6-15 dias), preco3 (16-30 dias)
 -- Execute: mysql -u usuario -p nome_banco < migration_precos.sql
 
 USE pequenos_a_bordo;

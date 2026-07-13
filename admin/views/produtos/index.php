@@ -20,7 +20,7 @@ ob_start();
                     alt="<?= htmlspecialchars($produto['nome']) ?>" class="w-full h-48 object-cover rounded mb-4">
                 <h3 class="font-semibold text-lg mb-2"><?= htmlspecialchars($produto['nome']) ?></h3>
                 <p class="text-sm text-gray-600 mb-2">Marca: <?= htmlspecialchars($produto['marca']) ?></p>
-                <p class="text-sm text-gray-600 mb-1">Preço 1 (2-5 dias): R$
+                <p class="text-sm text-gray-600 mb-1">Preço 1 (3-5 dias): R$
                     <?= number_format($produto['preco1'] ?? $produto['precoCurto'] ?? 0, 2, ',', '.') ?></p>
                 <p class="text-sm text-gray-600 mb-1">Preço 2 (6-15 dias): R$
                     <?= number_format($produto['preco2'] ?? $produto['precoLongo'] ?? 0, 2, ',', '.') ?></p>
@@ -59,7 +59,7 @@ ob_start();
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 1
-                        (2-5)</th>
+                        (3-5)</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 2
                         (6-15)</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço 3

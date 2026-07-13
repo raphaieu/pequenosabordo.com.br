@@ -62,7 +62,7 @@ ob_start();
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label for="preco1" class="block text-sm font-medium text-gray-700 mb-1">Preço 1 (2 a 5 dias)
+                    <label for="preco1" class="block text-sm font-medium text-gray-700 mb-1">Preço 1 (3 a 5 dias)
                         *</label>
                     <input type="number" id="preco1" name="preco1" step="0.01" min="0" required
                         value="<?= htmlspecialchars($produto['preco1'] ?? $produto['precoCurto'] ?? $data['preco1'] ?? $data['precoCurto'] ?? '') ?>"
