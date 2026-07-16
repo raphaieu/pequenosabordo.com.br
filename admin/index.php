@@ -44,7 +44,7 @@ if (isset($_SERVER['REQUEST_URI'])) {
         $requestUri = substr($requestUri, 0, $pos);
     }
     
-    // Verifica se é rota de API ou imagens (mantém prefixo completo)
+    // Verifica se é rota de API, imagens ou redirect público (mantém path completo)
     if (strpos($requestUri, '/admin/api') === 0) {
         // Mantém /admin/api intacto - Slim precisa ver o caminho completo
         // Remove apenas /admin/public/index.php se estiver presente
@@ -55,6 +55,9 @@ if (isset($_SERVER['REQUEST_URI'])) {
         // Mantém /images intacto
         $_SERVER['REQUEST_URI'] = $requestUri . $queryString;
         $_SERVER['PATH_INFO'] = $requestUri;
+    } elseif ($requestUri === '/avaliar' || $requestUri === '/avaliar/') {
+        $_SERVER['REQUEST_URI'] = '/avaliar' . $queryString;
+        $_SERVER['PATH_INFO'] = '/avaliar';
     } elseif (strpos($requestUri, '/admin') === 0) {
         // Remove /admin para rotas administrativas
         $requestUri = substr($requestUri, 6);
@@ -146,6 +149,13 @@ $authMiddleware = new AuthMiddleware();
 // ============================================
 // ROTAS PÚBLICAS (fora do base path)
 // ============================================
+
+// Redirect para avaliação no Google
+$app->get('/avaliar[/]', function ($request, $response) {
+    return $response
+        ->withStatus(302)
+        ->withHeader('Location', 'https://g.page/r/CVmXlpOpB8CVEBM/review');
+});
 
 // API pública para produtos (front-end) - DEVE SER PRIMEIRA PARA TER PRIORIDADE
 $app->get('/admin/api/produtos', function ($request, $response) use ($produtoModel) {
